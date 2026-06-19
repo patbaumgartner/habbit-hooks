@@ -1,0 +1,106 @@
+name: Startup Benchmark
+
+"on":
+  pull_request:
+    branches: ["main"]
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  startup:
+    name: Launcher startup regression guard
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+        with:
+          java-version: "25"
+          distribution: liberica
+          cache: maven
+
+      - name: Build launcher
+        run: ./mvnw --batch-mode -DskipTests package
+
+      - name: Benchmark startup
+        run: |
+          set -euo pipefail
+          JAR=$(echo target/*-launcher.jar)
+
+          # Warmup
+          java -jar "$JAR" --version > /dev/null
+
+          total=0
+          runs=5
+          for _ in 1 2 3 4 5; do
+            start=$(date +%s%3N)
+            java -jar "$JAR" --version > /dev/null
+            end=$(date +%s%3N)
+            elapsed=$((end - start))
+            total=$((total + elapsed))
+            echo "run_ms=$elapsed"
+          done
+
+          avg=$((total / runs))
+          echo "avg_ms=$avg"
+          echo "avg_ms=$avg" >> "$GITHUB_STEP_SUMMARY"
+
+          # Regression guard: fail if average startup exceeds 2500ms
+          if [ "$avg" -gt 2500 ]; then
+            echo "Startup regression detected: avg ${avg}ms exceeds threshold 2500ms" >&2
+            exit 1
+          fi
+
+  startup-native:
+    name: Native startup regression guard
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Set up GraalVM JDK 25
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+        with:
+          java-version: "25"
+          distribution: graalvm
+          cache: maven
+
+      - name: Build native executable
+        run: ./mvnw --batch-mode -Pnative -DskipTests package
+
+      - name: Benchmark native startup
+        run: |
+          set -euo pipefail
+          BIN=target/habit-hooks
+
+          # Warmup
+          "$BIN" --version > /dev/null
+
+          total=0
+          runs=5
+          for _ in 1 2 3 4 5; do
+            start=$(date +%s%3N)
+            "$BIN" --version > /dev/null
+            end=$(date +%s%3N)
+            elapsed=$((end - start))
+            total=$((total + elapsed))
+            echo "run_ms=$elapsed"
+          done
+
+          avg=$((total / runs))
+          echo "avg_ms=$avg"
+          echo "avg_ms=$avg" >> "$GITHUB_STEP_SUMMARY"
+
+          # Native startup should stay very fast
+          if [ "$avg" -gt 500 ]; then
+            echo "Native startup regression detected: avg ${avg}ms exceeds threshold 500ms" >&2
+            exit 1
+          fi

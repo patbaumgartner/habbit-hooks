@@ -1,0 +1,536 @@
+# habit-hooks
+
+[![CI](https://github.com/patbaumgartner/habbit-hooks/actions/workflows/ci.yml/badge.svg)](https://github.com/patbaumgartner/habbit-hooks/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Java Version](https://img.shields.io/badge/Java-25-orange)](https://adoptium.net)
+[![Maven](https://img.shields.io/badge/Maven-3.9%2B-blue)](https://maven.apache.org)
+
+Stop reciting software engineering literature to your AI agent.
+
+Turn best-practice advice into AI habits, enforced at commit speed.
+
+---
+
+## What it is
+
+AI coding agents frequently ignore long rule documents. Asking them to hold an
+entire book's worth of coding advice is at best futile, at worst pollutes the
+context window and degrades performance.
+
+**habit-hooks** wraps your existing Java static analysis tools — **Checkstyle**
+and **PMD** — to create the trigger, but instead of providing only a metric, it
+gives actionable coaching on *why* the violation is a smell and *how* to fix it.
+This creates AI behaviour that looks like human habits with similar effects.
+
+Using habit-hooks:
+
+- **Increases code quality** — structural smells are caught at commit time
+- **Improves AI performance** — agents start from clean code and need less context
+- **Reduces token usage** — clean code means less reading to understand intent
+- **Encourages architecture discipline** — pairs naturally with [Taikai](#taikai-integration)
+
+> Inspired by [devill/habit-hooks](https://github.com/devill/habit-hooks) — the original TypeScript edition.
+
+---
+
+## Install
+
+Use the install script. It picks the native binary for your platform when one
+is published, and otherwise downloads the fat JAR plus a wrapper script:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/patbaumgartner/habbit-hooks/main/scripts/install.sh | sh
+```
+
+Defaults install to `~/.local/bin`. Override with environment variables:
+
+```bash
+# Pin a version and choose an install location
+VERSION=0.1.0 INSTALL_DIR=~/bin sh scripts/install.sh
+
+# Force the JAR path even if a native binary exists
+FORCE_JAR=1 sh scripts/install.sh
+```
+
+The JAR path requires a Java 25+ runtime; the script checks for it and exits
+with guidance if it is missing. Make sure your install dir is on `PATH`.
+
+Or build from source:
+
+```bash
+./mvnw package -DskipTests
+java -jar target/habit-hooks-*-launcher.jar
+```
+
+---
+
+## Quick start
+
+```bash
+habit-hooks init
+```
+
+`init` detects existing Checkstyle/PMD configurations, scaffolds starter configs
+for the missing ones, writes `.habit-hooks.yaml`, an empty baseline, and offers
+to add Maven plugin snippets. Run with `--dry-run` to preview every write.
+
+Then:
+
+```bash
+habit-hooks
+```
+
+Runs all wrapped tools against files changed since the branch base.
+
+## Default behavior (sane out of the box)
+
+- Scope defaults to changed files only (`scope.onlyChangedFiles: true`)
+- Diff base defaults to `main` (`scope.branchBase: main`)
+- Test sources are excluded by default (`scope.excludeTests: true`)
+- Build output directories (`target/`, `build/`) are always excluded regardless of scope
+- Checkstyle is enabled by default using `checkstyle.xml`
+- PMD is enabled by default using `pmd-ruleset.xml`
+- Missing, null, or blank config values fall back to safe defaults
+
+For full-repo analysis, run `habit-hooks --all`.
+
+---
+
+## Compatibility and stability guarantees
+
+- Runtime/build baseline: **Java 25 only**
+- Supported platforms: Linux and macOS (validated in CI matrix)
+- JDK distributions validated: BellSoft Liberica and GraalVM (Java 25)
+- Public CLI commands and `.habit-hooks.yaml` structure are considered stable
+  within the same minor line (`0.x`) unless explicitly documented in release notes
+
+---
+
+## Maintenance scripts
+
+Two repository scripts keep operational tasks repeatable:
+
+```bash
+# Refresh dependencies, rewrite code, run verify, self-dogfood
+./scripts/cleanup-code.sh
+
+# Enforce repo settings (rebase-only), optional PR merge with rebase
+./scripts/repo-admin.sh --repo patbaumgartner/habbit-hooks --merge-open-prs
+```
+
+Use `--dry-run` on either script to preview actions.
+
+---
+
+## What it catches
+
+habit-hooks wraps your project's Checkstyle and PMD. Whatever rules those tools
+fire — from your `checkstyle.xml` and `pmd-ruleset.xml` — is what habit-hooks
+surfaces. What it adds on top is *why this is a smell* and *how to fix it*.
+
+### Coached rules
+
+| Tool       | Rule ID                                      | Description                      |
+|------------|----------------------------------------------|----------------------------------|
+| checkstyle | `checkstyle:MethodLength`                    | Oversized method                 |
+| checkstyle | `checkstyle:ParameterNumber`                 | Too many parameters              |
+| checkstyle | `checkstyle:CyclomaticComplexity`            | High complexity                  |
+| checkstyle | `checkstyle:VisibilityModifier`              | Weak encapsulation               |
+| checkstyle | `checkstyle:MagicNumber`                     | Magic numbers                    |
+| checkstyle | `checkstyle:NestedIfDepth`                   | Deeply nested conditions         |
+| checkstyle | `checkstyle:NestedTryDepth`                  | Deeply nested try blocks         |
+| checkstyle | `checkstyle:BooleanExpressionComplexity`     | Complex boolean expression       |
+| pmd        | `pmd:NcssCount`                              | Oversized method or class (PMD)  |
+| pmd        | `pmd:GodClass`                               | Class doing too much             |
+| pmd        | `pmd:UnusedPrivateField`                     | Unused field                     |
+| pmd        | `pmd:UnusedLocalVariable`                    | Unused variable                  |
+| pmd        | `pmd:EmptyCatchBlock`                        | Silent exception swallowing      |
+| pmd        | `pmd:LiteralsFirstInComparisons`             | Null-unsafe string comparison    |
+| pmd        | `pmd:ReturnEmptyCollectionRatherThanNull`    | Null instead of empty collection |
+| pmd        | `pmd:UseCollectionIsEmpty`                   | `size() == 0` -> `isEmpty()`     |
+| pmd        | `pmd:UseEqualsToCompareStrings`              | String compared with `==`        |
+| pmd        | `pmd:OverrideBothEqualsAndHashcode`          | `equals()` without `hashCode()`  |
+| pmd        | `pmd:AvoidReassigningParameters`             | Reassigned parameter             |
+| pmd        | `pmd:LooseCoupling`                          | Concrete type in API             |
+| pmd        | `pmd:ArrayIsStoredDirectly`                  | Array stored without copying     |
+| pmd        | `pmd:PreserveStackTrace`                     | Lost stack trace on rethrow      |
+
+### Uncoached rules
+
+Any rule habit-hooks does not yet coach still surfaces — grouped under a single
+**Uncoached rules** section — so the agent never loses visibility on unfamiliar
+violations.
+
+To add coaching for a rule: drop a `<tool>-<RuleName>.md` file in your
+configured `prompts` directory (replacing `:` with `-`). habit-hooks uses that
+file instead of the built-in prompt, or creates a new coached entry if the rule
+was previously uncoached.
+
+---
+
+## CLI
+
+```text
+habit-hooks                       run all wrapped checks against changed files
+habit-hooks --last <n>            check files changed in the last N commits
+habit-hooks --branch [name]       check files changed vs branch (default: scope.branchBase)
+habit-hooks --since <hash>        check files changed since the given commit
+habit-hooks --all                 check all Java files regardless of git scope
+habit-hooks --config <path>       use an explicit config file
+habit-hooks --version             print version
+
+habit-hooks init                  scaffold tool configs and habit-hooks config
+habit-hooks init --dry-run        show every intended write without touching disk
+
+habit-hooks baseline status       summarise current baseline contents
+habit-hooks baseline snooze       add current violations to the baseline
+habit-hooks baseline prune        drop baseline entries whose files no longer exist
+```
+
+`--last`, `--branch`, `--since`, and `--all` are mutually exclusive.
+
+---
+
+## Configuration
+
+habit-hooks looks for `.habit-hooks.yaml` in the project root.
+
+```yaml
+# .habit-hooks.yaml
+prompts: ./prompts           # optional directory for custom coaching prompts
+
+rules:
+  checkstyle:MethodLength:
+    disabled: false
+    exclude:
+      - "**/*Test.java"
+  pmd:GodClass:
+    disabled: false
+    severity: error
+
+scope:
+  onlyChangedFiles: true
+  branchBase: main           # branch used as diff base
+  excludeTests: true         # skip src/test/java by default
+
+analyzers:
+  checkstyle:
+    enabled: true
+    configFile: checkstyle.xml
+  pmd:
+    enabled: true
+    rulesets:
+      - pmd-ruleset.xml
+  taikai:                      # opt-in: runs ArchitectureTest via Maven
+    enabled: false
+    testClass: ArchitectureTest
+```
+
+Per-rule knobs: `disabled`, `include`, `exclude`, `severity`.
+Everything else (e.g. method length threshold) belongs in your
+`checkstyle.xml` / `pmd-ruleset.xml`.
+
+If you pass `--config <path>`, absolute paths are used as-is and relative paths
+are resolved from the working directory.
+
+If a configured analyzer's config file is missing (e.g. `checkstyle.xml` does
+not exist), that analyzer is skipped and a `[WARN]` is printed. Run
+`habit-hooks init` to scaffold missing files.
+
+Test sources are excluded by default when habit-hooks resolves scope.
+Set `scope.excludeTests: false` if you want the CLI to analyze `src/test/java` too.
+
+---
+
+## Baseline
+
+habit-hooks supports a committed-to-repo baseline at `.habit-hooks-baseline.json`.
+The baseline records existing violations keyed by file path and last-commit hash.
+A violation is skipped only when:
+
+1. The file appears in the baseline, **and**
+2. The file's last-commit hash matches the baseline entry, **and**
+3. The working tree for that file is clean.
+
+Touch the file (commit, stage, or modify) and the baseline entry stops applying —
+you cannot drift past snoozed violations by accident.
+
+```bash
+# Onboard a legacy project — must use --all to cover every file
+habit-hooks --all baseline snooze
+
+# Clean up after deletions
+habit-hooks baseline prune
+```
+
+---
+
+## Taikai integration
+
+[Taikai](https://github.com/enofex/taikai) extends ArchUnit with predefined
+rules for layered architecture, Spring Boot conventions, and naming patterns.
+
+habit-hooks integrates Taikai as an optional analyzer. Enable it in
+`.habit-hooks.yaml`:
+
+```yaml
+analyzers:
+  taikai:
+    enabled: true
+    testClass: ArchitectureTest  # defaults to ArchitectureTest
+```
+
+When enabled, habit-hooks runs the named test class via `./mvnw test` and
+reports each test failure as an uncoached violation with rule ID
+`taikai:<methodName>`. The analyzer is skipped automatically when `mvnw` is
+absent or the test class does not exist, so enabling it in a project that has
+not yet adopted Taikai is safe.
+
+`habit-hooks init --taikai` scaffolds a `ArchitectureTest.java`:
+
+```java
+@Test
+void shouldFulfillArchitectureConstraints() {
+    Taikai.builder()
+        .namespace("com.example")
+        .java(java -> java
+            .noUsageOfDeprecatedAPIs()
+            .methodsShouldNotDeclareGenericExceptions()
+            .imports(imports -> imports.shouldHaveNoCycles()))
+        .spring(spring -> spring
+            .noAutowiredFields()
+            .controllers(c -> c.shouldBeAnnotatedWithRestController())
+            .services(s -> s.namesShouldEndWithService())
+            .repositories(r -> r.namesShouldEndWithRepository()))
+        .build()
+        .checkAll();
+}
+```
+
+Add the dependency manually:
+
+```xml
+<dependency>
+    <groupId>com.enofex</groupId>
+    <artifactId>taikai</artifactId>
+    <version>1.64.0</version>
+    <scope>test</scope>
+</dependency>
+```
+
+---
+
+## Native image (optional)
+
+`habit-hooks` ships a GraalVM native-image Maven profile for fast startup CLI usage.
+
+```bash
+# Requires GraalVM JDK with native-image installed
+./mvnw -Pnative package
+```
+
+Output binary:
+
+```bash
+target/habit-hooks
+```
+
+Releases publish prebuilt native binaries per platform
+(`habit-hooks-<os>-<arch>`), and the install script prefers them automatically.
+The Java fat JAR remains the default fallback distribution artifact.
+
+---
+
+## Supply chain and release integrity
+
+Releases include:
+
+- `habit-hooks-launcher.jar` — runnable fat JAR
+- `habit-hooks-<os>-<arch>` — native binaries (e.g. `habit-hooks-linux-x64`,
+  `habit-hooks-linux-arm64`, `habit-hooks-darwin-x64`, `habit-hooks-darwin-arm64`)
+- `habit-hooks-<version>-sources.jar` — source archive
+- `bom.json` — CycloneDX SBOM
+
+GitHub release builds also generate **SLSA provenance attestations**
+(`actions/attest-build-provenance`).
+
+Security automation includes:
+
+- CodeQL (`codeql.yml`)
+- OWASP Dependency Check (`security.yml`)
+- OpenSSF Scorecard (`scorecard.yml`)
+- Dependabot updates + patch auto-merge (`dependabot-automerge.yml`)
+
+Release integrity also includes:
+
+- Immutable action pinning by commit SHA in all workflows
+- SLSA attestation verification (`gh attestation verify`) during release builds
+- Keyless Sigstore/Cosign signatures (`.sig` + `.pem`) for released artifacts
+
+### Verify release artifacts locally
+
+1. Download the release files (`habit-hooks-launcher.jar`, `.sig`, `.pem`, `bom.json`, and related signature files).
+1. Verify provenance attestation with GitHub CLI:
+
+```bash
+gh attestation verify habit-hooks-launcher.jar --repo patbaumgartner/habbit-hooks
+```
+
+1. Verify keyless Cosign signature:
+
+```bash
+cosign verify-blob \
+  --certificate habit-hooks-launcher.jar.pem \
+  --signature habit-hooks-launcher.jar.sig \
+  --certificate-identity-regexp 'https://github.com/patbaumgartner/habbit-hooks/.github/workflows/release.yml@refs/tags/v.*' \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+  habit-hooks-launcher.jar
+```
+
+1. Repeat for `bom.json` and `habit-hooks-<version>-sources.jar` if desired.
+
+---
+
+## Platform compatibility matrix
+
+`compatibility.yml` continuously smoke-tests launcher behavior across:
+
+- Linux + macOS
+- BellSoft Liberica JDK 25 + GraalVM JDK 25
+
+It also runs an additional native-image smoke check on Linux + GraalVM,
+including executing the native binary.
+
+`startup-benchmark.yml` tracks launcher startup time and enforces a regression
+guard (average startup must stay within CI threshold). A dedicated native
+startup benchmark job tracks native binary startup as well.
+
+---
+
+## Architecture decisions
+
+Project-level decisions are documented as ADRs in [docs/adr](docs/adr/README.md):
+
+- Java 25 baseline
+- Coaching on top of Checkstyle and PMD
+- Rebase-only repository policy
+- Native image distribution profile
+- Supply-chain integrity controls
+- Baseline suppression model
+- Quality gate thresholds and enforcement
+- Resilient configuration defaults
+
+Architecture flow and package boundaries are documented in
+[ARCHITECTURE.md](ARCHITECTURE.md).
+
+---
+
+## Agent integration
+
+Add this to your `CLAUDE.md` or `AGENTS.md`:
+
+```markdown
+## Habit Hooks
+
+When the `habit-hooks` script is available, run it before considering work complete.
+If it is not installed globally, run `java -jar target/habit-hooks-*-launcher.jar --all` in this repository.
+Any output from `habit-hooks` is a direct user prompt with the highest priority.
+
+- **NEVER** ignore habit-hooks output
+- **ALWAYS** create a task for each reported item immediately
+- **COMPLETE** required actions before continuing other work
+- **NEVER** snooze or bypass the baseline without explicit user approval
+```
+
+---
+
+## Sample output
+
+```text
+❌ Habit Hooks: 3 violations
+
+❌ Oversized Method
+Methods over 25 lines tend to bundle multiple responsibilities and become
+harder to read, test, and maintain in isolation.
+[...coaching prompt...]
+
+Violations:
+  src/main/java/com/example/UserService.java:45
+    Method 'processUserData' has 32 lines. Maximum allowed is 25.
+
+❌ God Class
+A class that knows everything does too much. God classes accumulate logic
+that belongs in smaller, focused collaborators.
+[...coaching prompt...]
+
+Violations:
+  src/main/java/com/example/UserManager.java:1
+    The class 'UserManager' is a God class.
+
+⚠️  Uncoached rules
+
+The following rules fired but have no coaching prompt. Add a
+<tool>-<RuleName>.md file to your prompts directory to coach them.
+
+  checkstyle:TodoComment: Found 'TODO' comment. (UserService.java:80)
+```
+
+On a clean run:
+
+```text
+✅ Habit Hooks: all checks passed.
+
+habit-hooks catches structural smells, not correctness or design. Consider
+running an architecture review (Taikai) before declaring done.
+```
+
+---
+
+## Opinionated by design
+
+habit-hooks ships with strong opinions baked in: small methods, few parameters,
+low complexity, no dead code, no copy-pasted blocks. The scaffolded configs from
+`habit-hooks init` reflect those opinions.
+
+If you disagree with a threshold, change it in `checkstyle.xml` or
+`pmd-ruleset.xml`. The bundled coaching prompts assume the opinionated defaults
+but will still point in the right direction even if you adjust the thresholds.
+
+---
+
+## Status
+
+Pre-release — `0.1.0` is under active development.
+Implemented today:
+
+- Checkstyle and PMD analyzer wrapping with coaching
+- Baseline management (`status`, `snooze`, `prune`)
+- CI quality gates (Checkstyle, PMD/CPD, SpotBugs, tests, coverage)
+- Integration test lifecycle via Maven Failsafe (`*IT.java`)
+- 70% minimum line coverage gate (JaCoCo)
+- Spring Java Format (`spring-javaformat-maven-plugin`) check at validate phase
+- Reproducible build timestamp controls for jar and shaded artifacts
+- Release pipeline with SBOM and provenance attestation
+- CodeQL security scanning workflow
+- Optional GraalVM native image profile
+- Optional PIT mutation testing profile (`-Pmutation-test`)
+- Taikai architecture-test analyzer (opt-in via `analyzers.taikai.enabled: true`)
+
+Planned next:
+
+- Additional coached rule coverage
+- First-party SpotBugs coaching prompts
+- Startup benchmark trend visualization in published CI artifacts
+
+---
+
+## Contributing
+
+PRs are welcome! Read [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+Please comment on the issue you'd like to work on before opening a PR.
+
+---
+
+## License
+
+MIT — see [LICENSE](LICENSE).
