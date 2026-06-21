@@ -37,7 +37,8 @@ class NativeImageMetadataTest {
     void registersBundledAnalyzerRulesetsAsNativeResources() throws Exception {
         String metadata = Files.readString(RESOURCE_CONFIG);
 
-        assertThat(metadata).contains("com/puppycrawl/tools/checkstyle/.*\\\\.dtd", "category/java/.*\\\\.xml",
+        assertThat(metadata).contains("com/puppycrawl/tools/checkstyle/.*\\\\.dtd",
+                "com/puppycrawl/tools/checkstyle/.*messages.*\\\\.properties", "category/java/.*\\\\.xml",
                 "rulesets/.*\\\\.xml");
     }
 
@@ -74,7 +75,44 @@ class NativeImageMetadataTest {
                 "[Ljava.lang.Integer;", "[Ljava.lang.Long;", "[Ljava.lang.Short;", "[Ljava.lang.String;",
                 "[Ljava.lang.Class;", "[Ljava.math.BigDecimal;", "[Ljava.math.BigInteger;", "[Ljava.util.Date;",
                 "[Ljava.util.Calendar;", "[Ljava.io.File;", "[Ljava.sql.Date;", "[Ljava.sql.Time;",
-                "[Ljava.sql.Timestamp;", "[Ljava.net.URL;");
+                "[Ljava.sql.Timestamp;", "[Ljava.net.URL;", "[Ljava.util.regex.Pattern;",
+                "[Lcom.puppycrawl.tools.checkstyle.checks.naming.AccessModifierOption;");
+    }
+
+    @Test
+    void registersConfiguredCheckstyleModulesForNativeReflection() throws Exception {
+        String metadata = Files.readString(REFLECT_CONFIG);
+
+        assertThat(metadata).contains("com.puppycrawl.tools.checkstyle.Checker",
+                "com.puppycrawl.tools.checkstyle.TreeWalker",
+                "com.puppycrawl.tools.checkstyle.checks.whitespace.FileTabCharacterCheck",
+                "com.puppycrawl.tools.checkstyle.checks.NewlineAtEndOfFileCheck",
+                "com.puppycrawl.tools.checkstyle.checks.sizes.FileLengthCheck",
+                "com.puppycrawl.tools.checkstyle.checks.sizes.MethodLengthCheck",
+                "com.puppycrawl.tools.checkstyle.checks.sizes.ParameterNumberCheck",
+                "com.puppycrawl.tools.checkstyle.checks.metrics.CyclomaticComplexityCheck",
+                "com.puppycrawl.tools.checkstyle.checks.metrics.JavaNCSSCheck",
+                "com.puppycrawl.tools.checkstyle.checks.metrics.BooleanExpressionComplexityCheck",
+                "com.puppycrawl.tools.checkstyle.checks.naming.TypeNameCheck",
+                "com.puppycrawl.tools.checkstyle.checks.naming.MethodNameCheck",
+                "com.puppycrawl.tools.checkstyle.checks.naming.ParameterNameCheck",
+                "com.puppycrawl.tools.checkstyle.checks.naming.LocalVariableNameCheck",
+                "com.puppycrawl.tools.checkstyle.checks.naming.MemberNameCheck",
+                "com.puppycrawl.tools.checkstyle.checks.naming.StaticVariableNameCheck",
+                "com.puppycrawl.tools.checkstyle.checks.naming.ConstantNameCheck",
+                "com.puppycrawl.tools.checkstyle.checks.naming.PackageNameCheck",
+                "com.puppycrawl.tools.checkstyle.checks.naming.ClassTypeParameterNameCheck",
+                "com.puppycrawl.tools.checkstyle.checks.design.VisibilityModifierCheck",
+                "com.puppycrawl.tools.checkstyle.checks.design.FinalClassCheck",
+                "com.puppycrawl.tools.checkstyle.checks.design.InnerTypeLastCheck",
+                "com.puppycrawl.tools.checkstyle.checks.design.OneTopLevelClassCheck",
+                "com.puppycrawl.tools.checkstyle.checks.coding.MagicNumberCheck",
+                "com.puppycrawl.tools.checkstyle.checks.coding.InnerAssignmentCheck",
+                "com.puppycrawl.tools.checkstyle.checks.coding.SimplifyBooleanExpressionCheck",
+                "com.puppycrawl.tools.checkstyle.checks.coding.SimplifyBooleanReturnCheck",
+                "com.puppycrawl.tools.checkstyle.checks.coding.StringLiteralEqualityCheck",
+                "com.puppycrawl.tools.checkstyle.checks.coding.NestedIfDepthCheck",
+                "com.puppycrawl.tools.checkstyle.checks.coding.NestedTryDepthCheck");
     }
 
     private static List<Class<?>> jacksonTypes() {

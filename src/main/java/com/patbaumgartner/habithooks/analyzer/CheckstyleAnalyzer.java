@@ -74,6 +74,10 @@ public final class CheckstyleAnalyzer implements Analyzer {
             LOGGER.error("Checkstyle analysis failed: {}", e.getMessage(), e);
             return List.of();
         }
+        catch (RuntimeException | Error e) {
+            LOGGER.error("Checkstyle analysis aborted: {}", e.getMessage(), e);
+            return List.of();
+        }
     }
 
     private List<Violation> runCheckstyle(List<Path> files, Path configPath) throws CheckstyleException {

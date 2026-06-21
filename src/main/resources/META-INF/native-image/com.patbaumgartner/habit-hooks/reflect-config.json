@@ -223,5 +223,203 @@
   },
   {
     "name": "[Ljava.net.URL;"
+  },
+  {
+    "name": "[Ljava.util.regex.Pattern;"
+  },
+  {
+    "name": "[Lcom.puppycrawl.tools.checkstyle.checks.naming.AccessModifierOption;"
+  },
+  {
+    "name": "com.puppycrawl.tools.checkstyle.api.SeverityLevel",
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "com.puppycrawl.tools.checkstyle.api.Scope",
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "com.puppycrawl.tools.checkstyle.checks.naming.AccessModifierOption",
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "com.puppycrawl.tools.checkstyle.Checker",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true,
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "com.puppycrawl.tools.checkstyle.TreeWalker",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true,
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "com.puppycrawl.tools.checkstyle.checks.whitespace.FileTabCharacterCheck",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true,
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "com.puppycrawl.tools.checkstyle.checks.NewlineAtEndOfFileCheck",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true,
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "com.puppycrawl.tools.checkstyle.checks.sizes.FileLengthCheck",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true,
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "com.puppycrawl.tools.checkstyle.checks.sizes.MethodLengthCheck",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true,
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "com.puppycrawl.tools.checkstyle.checks.sizes.ParameterNumberCheck",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true,
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "com.puppycrawl.tools.checkstyle.checks.metrics.CyclomaticComplexityCheck",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true,
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "com.puppycrawl.tools.checkstyle.checks.metrics.JavaNCSSCheck",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true,
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "com.puppycrawl.tools.checkstyle.checks.metrics.BooleanExpressionComplexityCheck",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true,
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "com.puppycrawl.tools.checkstyle.checks.naming.TypeNameCheck",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true,
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "com.puppycrawl.tools.checkstyle.checks.naming.MethodNameCheck",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true,
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "com.puppycrawl.tools.checkstyle.checks.naming.ParameterNameCheck",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true,
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "com.puppycrawl.tools.checkstyle.checks.naming.LocalVariableNameCheck",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true,
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "com.puppycrawl.tools.checkstyle.checks.naming.MemberNameCheck",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true,
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "com.puppycrawl.tools.checkstyle.checks.naming.StaticVariableNameCheck",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true,
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "com.puppycrawl.tools.checkstyle.checks.naming.ConstantNameCheck",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true,
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "com.puppycrawl.tools.checkstyle.checks.naming.PackageNameCheck",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true,
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "com.puppycrawl.tools.checkstyle.checks.naming.ClassTypeParameterNameCheck",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true,
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "com.puppycrawl.tools.checkstyle.checks.design.VisibilityModifierCheck",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true,
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "com.puppycrawl.tools.checkstyle.checks.design.FinalClassCheck",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true,
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "com.puppycrawl.tools.checkstyle.checks.design.InnerTypeLastCheck",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true,
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "com.puppycrawl.tools.checkstyle.checks.design.OneTopLevelClassCheck",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true,
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "com.puppycrawl.tools.checkstyle.checks.coding.MagicNumberCheck",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true,
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "com.puppycrawl.tools.checkstyle.checks.coding.InnerAssignmentCheck",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true,
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "com.puppycrawl.tools.checkstyle.checks.coding.SimplifyBooleanExpressionCheck",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true,
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "com.puppycrawl.tools.checkstyle.checks.coding.SimplifyBooleanReturnCheck",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true,
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "com.puppycrawl.tools.checkstyle.checks.coding.StringLiteralEqualityCheck",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true,
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "com.puppycrawl.tools.checkstyle.checks.coding.NestedIfDepthCheck",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true,
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "com.puppycrawl.tools.checkstyle.checks.coding.NestedTryDepthCheck",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true,
+    "allDeclaredMethods": true
   }
 ]

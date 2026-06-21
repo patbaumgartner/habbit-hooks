@@ -68,7 +68,13 @@ public final class PmdAnalyzer implements Analyzer {
             LOGGER.warn("No PMD ruleset files found in {}; skipping PMD analysis.", workingDir);
             return List.of();
         }
-        return runPmd(files, resolvedRulesets, workingDir);
+        try {
+            return runPmd(files, resolvedRulesets, workingDir);
+        }
+        catch (RuntimeException | Error ex) {
+            LOGGER.error("PMD analysis aborted: {}", ex.getMessage(), ex);
+            return List.of();
+        }
     }
 
     private List<String> resolveRulesets(Path workingDir) {

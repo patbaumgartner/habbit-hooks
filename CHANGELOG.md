@@ -9,6 +9,13 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.1.7] - 2026-06-21
+
+### Fixed
+
+- Native Checkstyle analysis now registers configured Checkstyle modules and message bundles for JavaBeans configuration
+- Native analyzer runtime failures are contained to the failing analyzer so reports and task exports can still complete
+
 ## [0.1.6] - 2026-06-21
 
 ### Fixed
@@ -113,7 +120,8 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - `--config <path>` relative paths now resolve from the current working directory
 - Documentation refresh across README, ARCHITECTURE, AGENTS, and CLAUDE for concise defaults-first guidance
 
-[Unreleased]: https://github.com/patbaumgartner/habbit-hooks/compare/v0.1.6...HEAD
+[Unreleased]: https://github.com/patbaumgartner/habbit-hooks/compare/v0.1.7...HEAD
+[0.1.7]: https://github.com/patbaumgartner/habbit-hooks/releases/tag/v0.1.7
 [0.1.6]: https://github.com/patbaumgartner/habbit-hooks/releases/tag/v0.1.6
 [0.1.5]: https://github.com/patbaumgartner/habbit-hooks/releases/tag/v0.1.5
 [0.1.4]: https://github.com/patbaumgartner/habbit-hooks/releases/tag/v0.1.4
