@@ -9,6 +9,14 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-06-21
+
+### Fixed
+
+- Native binaries now read baseline and report history JSON models without Jackson reflection failures
+- Native PMD analysis now includes bundled Java ruleset resources
+- Checkstyle config loading now uses a file URI system ID so native XML parsing can resolve DTDs reliably
+
 ## [0.1.3] - 2026-06-21
 
 ### Fixed
@@ -92,7 +100,8 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - `--config <path>` relative paths now resolve from the current working directory
 - Documentation refresh across README, ARCHITECTURE, AGENTS, and CLAUDE for concise defaults-first guidance
 
-[Unreleased]: https://github.com/patbaumgartner/habbit-hooks/compare/v0.1.3...HEAD
+[Unreleased]: https://github.com/patbaumgartner/habbit-hooks/compare/v0.1.4...HEAD
+[0.1.4]: https://github.com/patbaumgartner/habbit-hooks/releases/tag/v0.1.4
 [0.1.3]: https://github.com/patbaumgartner/habbit-hooks/releases/tag/v0.1.3
 [0.1.2]: https://github.com/patbaumgartner/habbit-hooks/releases/tag/v0.1.2
 [0.1.0]: https://github.com/patbaumgartner/habbit-hooks/releases/tag/v0.1.0

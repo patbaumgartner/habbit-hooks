@@ -9,6 +9,8 @@ import com.puppycrawl.tools.checkstyle.api.AuditListener;
 import com.puppycrawl.tools.checkstyle.api.CheckstyleException;
 import com.puppycrawl.tools.checkstyle.api.Configuration;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -16,6 +18,7 @@ import java.util.List;
 import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xml.sax.InputSource;
 
 /**
  * Wraps the Checkstyle API to report violations as {@link Violation} records.
@@ -86,8 +89,15 @@ public final class CheckstyleAnalyzer implements Analyzer {
     }
 
     private static Configuration loadConfig(Path configPath) throws CheckstyleException {
-        return ConfigurationLoader.loadConfiguration(configPath.toString(), new PropertiesExpander(new Properties()),
-                ConfigurationLoader.IgnoredModulesOptions.OMIT);
+        try (InputStream input = Files.newInputStream(configPath)) {
+            InputSource source = new InputSource(input);
+            source.setSystemId(configPath.toUri().toString());
+            return ConfigurationLoader.loadConfiguration(source, new PropertiesExpander(new Properties()),
+                    ConfigurationLoader.IgnoredModulesOptions.OMIT);
+        }
+        catch (IOException ex) {
+            throw new CheckstyleException("Failed to read Checkstyle config " + configPath, ex);
+        }
     }
 
     private static Checker buildChecker(Configuration config, AuditListener listener) throws CheckstyleException {
