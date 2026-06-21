@@ -84,6 +84,18 @@ habit-hooks init --maven-snippets --taikai
 habit-hooks init --help
 ```
 
+On an already-scaffolded checkout, preview the initializer first:
+
+```bash
+habit-hooks init --maven-snippets --taikai --dry-run
+```
+
+If the dry run says it would write `src/test/java/ArchitectureTest.java`, skip
+the real initializer and keep the package-correct Petclinic test at
+`src/test/java/org/springframework/samples/petclinic/ArchitectureTest.java`.
+The default generated Taikai test lives outside Petclinic's application package
+and is only a starting point for a fresh checkout.
+
 Update `.habit-hooks.yaml` so reference validation checks the full main source tree and
 enables all analyzers:
 
@@ -252,37 +264,38 @@ EOF
 
 Run each command and capture its exit code. The analyzer pass may fail when it
 finds issues; report and task generation should continue with `--no-fail`.
+When running interactively, prefer one command at a time or a tiny helper like
+`run_step` below; very long pasted command chains are harder to recover if the
+shell enters continuation mode.
 
 ```bash
-habit-hooks --version > "$out/logs/version.log" 2>&1
-habit-hooks doctor > "$out/logs/doctor.log" 2>&1
+run_step() {
+  name="$1"
+  shift
+  "$@" > "$out/logs/${name}.log" 2>&1
+  printf '%s\n' "$?" > "$out/exit-code-${name}.txt"
+}
 
-habit-hooks --all > "$out/logs/all-analyzers.log" 2>&1
-printf '%s\n' "$?" > "$out/exit-code-all-analyzers.txt"
+run_step version habit-hooks --version
+run_step doctor habit-hooks doctor
 
-habit-hooks report --format markdown --output "$out/report.md" --no-fail > "$out/logs/report-markdown.log" 2>&1
-printf '%s\n' "$?" > "$out/exit-code-report-markdown.txt"
+run_step all-analyzers habit-hooks --all
 
-habit-hooks report --format json --output "$out/report.json" --no-fail > "$out/logs/report-json.log" 2>&1
-printf '%s\n' "$?" > "$out/exit-code-report-json.txt"
+run_step report-markdown habit-hooks report --format markdown --output "$out/report.md" --no-fail
 
-habit-hooks report --format html --output "$out/report.html" --no-fail > "$out/logs/report-html.log" 2>&1
-printf '%s\n' "$?" > "$out/exit-code-report-html.txt"
+run_step report-json habit-hooks report --format json --output "$out/report.json" --no-fail
 
-habit-hooks report --format sarif --output "$out/report.sarif" --no-fail > "$out/logs/report-sarif.log" 2>&1
-printf '%s\n' "$?" > "$out/exit-code-report-sarif.txt"
+run_step report-html habit-hooks report --format html --output "$out/report.html" --no-fail
 
-habit-hooks tasks --format markdown --output "$out/tasks.md" --no-fail > "$out/logs/tasks-markdown.log" 2>&1
-printf '%s\n' "$?" > "$out/exit-code-tasks-markdown.txt"
+run_step report-sarif habit-hooks report --format sarif --output "$out/report.sarif" --no-fail
 
-habit-hooks tasks --format json --output "$out/tasks.json" --no-fail > "$out/logs/tasks-json.log" 2>&1
-printf '%s\n' "$?" > "$out/exit-code-tasks-json.txt"
+run_step tasks-markdown habit-hooks tasks --format markdown --output "$out/tasks.md" --no-fail
 
-habit-hooks dependencies --output "$out/dependencies.txt" > "$out/logs/dependencies.log" 2>&1
-printf '%s\n' "$?" > "$out/exit-code-dependencies.txt"
+run_step tasks-json habit-hooks tasks --format json --output "$out/tasks.json" --no-fail
 
-./mvnw --batch-mode --no-transfer-progress pmd:pmd -Dpmd.rulesets=pmd-ruleset.xml > "$out/logs/maven-pmd.log" 2>&1
-printf '%s\n' "$?" > "$out/exit-code-maven-pmd.txt"
+run_step dependencies habit-hooks dependencies --output "$out/dependencies.txt"
+
+run_step maven-pmd ./mvnw --batch-mode --no-transfer-progress pmd:pmd -Dpmd.rulesets=pmd-ruleset.xml
 
 cp target/pmd.xml "$out/pmd.xml" 2> "$out/logs/copy-pmd.log"
 printf '%s\n' "$?" > "$out/exit-code-copy-pmd.txt"
@@ -329,11 +342,23 @@ The validation run fixed Petclinic by following the task feed:
   the PIT no-coverage mutations.
 - Added a Maven version enforcer rule after `habit-hooks dependencies` reported
   that the project did not declare a minimum Maven version.
+- Fixed any PMD companion findings from `target/pmd.xml`, then regenerated the
+  report and task artifacts so native analyzer output and Maven PMD evidence
+  agreed.
 
 If `habit-hooks --all` reports Maven-goal failures such as PIT, Error Prone, or
 Spring Java Format, inspect `target/habit-hooks/*.log` before changing
 application code. In the validation run, stale formatting blocked several
 Maven-backed analyzer goals until `spring-javaformat:apply` was rerun.
+If `habit-hooks --all` passes but a later `habit-hooks report` or
+`habit-hooks tasks` command still reports lifecycle-blocked findings, remove the
+stale analyzer scratch logs and rerun from a clean analyzer state:
+
+```bash
+rm -rf target/habit-hooks
+./mvnw --batch-mode --no-transfer-progress spring-javaformat:apply
+habit-hooks --all
+```
 
 ## 6. Capture the after evidence
 
