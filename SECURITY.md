@@ -14,7 +14,10 @@
 
 **Do not open a public GitHub issue for security vulnerabilities.**
 
-Please report security issues by emailing the maintainer directly.
+Please report security issues through GitHub's private vulnerability reporting:
+
+<https://github.com/patbaumgartner/habbit-hooks/security/advisories/new>
+
 Include as much detail as possible:
 
 - The nature of the vulnerability

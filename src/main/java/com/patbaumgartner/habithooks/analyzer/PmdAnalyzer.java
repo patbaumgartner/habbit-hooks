@@ -72,7 +72,7 @@ public final class PmdAnalyzer implements Analyzer {
             return runPmd(files, resolvedRulesets, workingDir);
         }
         catch (RuntimeException | Error ex) {
-            LOGGER.warn("PMD analysis aborted: {}", ex.getMessage());
+            LOGGER.warn("PMD analysis aborted: {}", ex.getMessage(), ex);
             return List.of();
         }
     }

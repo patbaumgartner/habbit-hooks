@@ -71,11 +71,11 @@ public final class CheckstyleAnalyzer implements Analyzer {
             return runCheckstyle(files, configPath);
         }
         catch (CheckstyleException e) {
-            LOGGER.warn("Checkstyle analysis failed: {}", e.getMessage());
+            LOGGER.warn("Checkstyle analysis failed: {}", e.getMessage(), e);
             return List.of();
         }
         catch (RuntimeException | Error e) {
-            LOGGER.warn("Checkstyle analysis aborted: {}", e.getMessage());
+            LOGGER.warn("Checkstyle analysis aborted: {}", e.getMessage(), e);
             return List.of();
         }
     }
@@ -145,7 +145,7 @@ public final class CheckstyleAnalyzer implements Analyzer {
 
         @Override
         public void addException(AuditEvent event, Throwable throwable) {
-            LOGGER.warn("Checkstyle exception on {}: {}", event.getFileName(), throwable.getMessage());
+            LOGGER.warn("Checkstyle exception on {}: {}", event.getFileName(), throwable.getMessage(), throwable);
         }
 
         List<Violation> getViolations() {

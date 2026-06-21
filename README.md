@@ -4,6 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Java Version](https://img.shields.io/badge/Java-25-orange)](https://adoptium.net)
 [![Maven](https://img.shields.io/badge/Maven-3.9%2B-blue)](https://maven.apache.org)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/patbaumgartner/habbit-hooks/badge)](https://securityscorecards.dev/viewer/?uri=github.com/patbaumgartner/habbit-hooks)
 
 Stop reciting software engineering literature to your AI agent.
 
@@ -520,6 +521,7 @@ Security automation includes:
 - OWASP Dependency Check (`security.yml`)
 - OpenSSF Scorecard (`scorecard.yml`)
 - Dependabot updates + patch auto-merge (`dependabot-automerge.yml`)
+- Private vulnerability reports through GitHub Security Advisories
 
 Release integrity also includes:
 
