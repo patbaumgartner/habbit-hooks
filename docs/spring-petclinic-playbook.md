@@ -73,31 +73,34 @@ generate `target/pmd.xml` and feed PMD findings into the normal coaching output.
 
 ## 3. Scaffold Petclinic
 
-Run the real initializer from the upgraded binary. The `--taikai` test is a useful
-starting point, but Spring Petclinic needs the generated test moved into the
-application package and the namespace set to Petclinic's root package.
+Run the real initializer from the upgraded binary. Spring Boot mode enables the
+full analyzer configuration, writes `AGENTS.md`, generates Maven snippets, and
+scaffolds the Taikai starter test when `src/test/java` exists.
 
 ```bash
 cd /home/patbaumgartner/GitHub/spring-petclinic
 
-habit-hooks init --maven-snippets --taikai
+habit-hooks init --spring-boot
 habit-hooks init --help
 ```
 
 On an already-scaffolded checkout, preview the initializer first:
 
 ```bash
-habit-hooks init --maven-snippets --taikai --dry-run
+habit-hooks init --spring-boot --dry-run
 ```
 
-If the dry run says it would write `src/test/java/ArchitectureTest.java`, skip
-the real initializer and keep the package-correct Petclinic test at
+The generated Taikai test is a useful starting point, but Spring Petclinic should
+keep the package-correct test at
 `src/test/java/org/springframework/samples/petclinic/ArchitectureTest.java`.
-The default generated Taikai test lives outside Petclinic's application package
-and is only a starting point for a fresh checkout.
+If the dry run says it would write `src/test/java/ArchitectureTest.java`, either
+move the generated test into the application package and set the namespace to
+Petclinic's root package, or skip that generated file and keep the package-correct
+version.
 
-Update `.habit-hooks.yaml` so reference validation checks the full main source tree and
-enables all analyzers:
+Verify `.habit-hooks.yaml` checks the full main source tree and enables all
+analyzers. `habit-hooks init --spring-boot` writes this shape; tune PIT target
+classes/tests and OWASP cache flags for the reference run as needed:
 
 ```yaml
 scope:
@@ -126,7 +129,7 @@ analyzers:
     reportFile: target/site/jacoco/jacoco.xml
   cyclonedx:
     enabled: true
-    goal: package cyclonedx:makeAggregateBom
+    goal: -Phabit-hooks-analyzers cyclonedx:makeAggregateBom
     reportFile: target/bom.json
   pitest:
     enabled: true
@@ -460,7 +463,7 @@ habit-hooks --version
 
 cd /home/patbaumgartner/GitHub/spring-petclinic
 habit-hooks init --help
-habit-hooks init --maven-snippets --taikai
+habit-hooks init --spring-boot
 find . -maxdepth 3 \( -name '.habit-hooks.yaml' -o -name 'checkstyle.xml' -o -name 'pmd-ruleset.xml' -o -name 'habit-hooks-maven-snippets.xml' \) -print
 find src/test/java -name '*ArchitectureTest*.java' -print
 

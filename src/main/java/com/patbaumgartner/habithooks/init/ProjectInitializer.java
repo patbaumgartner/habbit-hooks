@@ -15,9 +15,10 @@ import org.slf4j.LoggerFactory;
  *
  * <p>
  * Detects existing tool configurations, scaffolds missing ones, and writes
- * {@code .habit-hooks.yaml}. When {@code taikai} is set it also writes an
- * {@code ArchitectureTest.java} template. When {@code mavenSnippets} is set it writes
- * optional Maven plugin and dependency snippets for project-scoped analyzers.
+ * {@code .habit-hooks.yaml} plus {@code AGENTS.md} guidance. When {@code taikai} or
+ * {@code springBoot} is set it also writes an {@code ArchitectureTest.java} template.
+ * When {@code mavenSnippets} or {@code springBoot} is set it writes optional Maven plugin
+ * and dependency snippets for project-scoped analyzers.
  */
 public final class ProjectInitializer {
 
@@ -50,22 +51,41 @@ public final class ProjectInitializer {
         }
         writeIfAbsent("checkstyle.xml", "checkstyle.xml");
         writeIfAbsent("pmd-ruleset.xml", "pmd-ruleset.xml");
-        writeIfAbsent(".habit-hooks.yaml", "habit-hooks-config.yaml");
+        writeIfAbsent(".habit-hooks.yaml", configTemplate());
         writeIfAbsent(".habit-hooks-baseline.json", "baseline-empty.json");
-        if (options.taikai()) {
+        writeIfAbsent("AGENTS.md", agentsTemplate());
+        if (options.taikai() || options.springBoot()) {
             scaffoldTaikaiTest();
         }
-        if (options.mavenSnippets()) {
+        if (options.mavenSnippets() || options.springBoot()) {
             writeIfAbsent("habit-hooks-maven-snippets.xml", "maven-quality-pom-snippets.xml");
         }
         printCompletion();
     }
 
+    private String configTemplate() {
+        if (options.springBoot()) {
+            return "spring-boot-habit-hooks-config.yaml";
+        }
+        return "habit-hooks-config.yaml";
+    }
+
+    private String agentsTemplate() {
+        if (options.springBoot()) {
+            return "spring-boot-agents.md.template";
+        }
+        return "agents.md.template";
+    }
+
     private void printCompletion() {
         if (!options.dryRun()) {
-            if (options.taikai()) {
+            if (options.taikai() || options.springBoot()) {
                 out.println("ℹ️  Taikai tests require the com.enofex:taikai test dependency."
                         + " Copy it from habit-hooks-maven-snippets.xml before running Maven tests.");
+            }
+            if (options.springBoot()) {
+                out.println("ℹ️  Spring Boot analyzers were enabled. Run habit-hooks doctor after copying Maven"
+                        + " snippets into pom.xml.");
             }
             out.println("✅ habit-hooks initialized. Run: habit-hooks --all");
         }
@@ -131,7 +151,7 @@ public final class ProjectInitializer {
     }
 
     /** Options controlling which optional scaffold files are written. */
-    public record Options(boolean dryRun, boolean taikai, boolean mavenSnippets) {
+    public record Options(boolean dryRun, boolean taikai, boolean mavenSnippets, boolean springBoot) {
     }
 
     @FunctionalInterface

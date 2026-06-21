@@ -86,12 +86,25 @@ habit-hooks init
 ```
 
 `init` detects existing Checkstyle/PMD configurations, scaffolds starter configs
-for the missing ones, writes `.habit-hooks.yaml`, and creates an empty baseline.
-Run with `--dry-run` to preview every write. Add `--maven-snippets` when you want
-a reference file with optional Maven plugin/dependency fragments for the
+for the missing ones, writes `.habit-hooks.yaml`, creates an empty baseline, and
+writes `AGENTS.md` so AI coding agents know how to run the tool. Run with
+`--dry-run` to preview every write. Add `--maven-snippets` when you want a
+reference file with optional Maven plugin/dependency fragments for the
 project-scoped analyzers. Add `--taikai` when you want a starter architecture
 test in `src/test/java`; copy the Taikai dependency from the Maven snippets
 before running Maven test-based analyzers.
+
+For Spring Boot applications, start with the full analyzer scaffold:
+
+```bash
+habit-hooks init --spring-boot
+```
+
+Spring Boot mode enables the project-scoped analyzer surface in
+`.habit-hooks.yaml`, writes the Spring-oriented `AGENTS.md`, scaffolds the Taikai
+architecture test when `src/test/java` exists, and writes Maven snippets for the
+required plugins, profiles, and dependencies. Copy the relevant snippets into
+`pom.xml`, then run `habit-hooks doctor`.
 
 Then:
 
@@ -266,6 +279,7 @@ habit-hooks init                  scaffold tool configs and habit-hooks config
 habit-hooks init --dry-run        show every intended write without touching disk
 habit-hooks init --taikai         scaffold a Taikai ArchitectureTest.java
 habit-hooks init --maven-snippets scaffold optional Maven plugin snippets
+habit-hooks init --spring-boot    enable Spring Boot analyzer defaults and support files
 
 habit-hooks report                write target/habit-hooks/report.md
 habit-hooks report --format html  write a static local quality dashboard
@@ -334,7 +348,7 @@ analyzers:
     testClass: ArchitectureTest
   spotbugs:                    # opt-in: parses target/spotbugsXml.xml
     enabled: false
-    goal: spotbugs:spotbugs
+    goal: -Phabit-hooks-analyzers spotbugs:spotbugs
     reportFile: target/spotbugsXml.xml
   jacoco:                      # opt-in: parses target/site/jacoco/jacoco.xml
     enabled: false
@@ -342,7 +356,7 @@ analyzers:
     reportFile: target/site/jacoco/jacoco.xml
   cyclonedx:                   # opt-in: validates target/bom.json
     enabled: false
-    goal: cyclonedx:makeAggregateBom
+    goal: -Phabit-hooks-analyzers cyclonedx:makeAggregateBom
     reportFile: target/bom.json
   pitest:                      # opt-in: expensive mutation testing
     enabled: false
@@ -354,11 +368,11 @@ analyzers:
     reportFile: target/habit-hooks/spring-javaformat.log
   errorprone:                  # opt-in: captures compiler/Error Prone output
     enabled: false
-    goal: compile
+    goal: -Phabit-hooks-errorprone compile
     reportFile: target/habit-hooks/errorprone.log
   owasp:                       # opt-in: parses target/dependency-check-report.json
     enabled: false
-    goal: org.owasp:dependency-check-maven:check -Dformat=JSON
+    goal: -Phabit-hooks-analyzers org.owasp:dependency-check-maven:check -Dformat=JSON -DfailBuildOnCVSS=11
     reportFile: target/dependency-check-report.json
   jspecify:                    # opt-in: checks nullness annotation adoption
     enabled: false
@@ -389,6 +403,12 @@ The snippets keep expensive checks opt-in, but the generated PIT profile include
 minimum mutation, coverage, and test-strength thresholds, and the Error Prone
 compiler fragment enables `-Xlint:all` with `-Werror` for stricter Spring Boot
 service builds.
+
+`habit-hooks init --spring-boot` uses the same snippets but enables the full
+Spring Boot reference surface immediately: Taikai, SpotBugs, JaCoCo, CycloneDX,
+PIT, Spring Java Format, Error Prone, OWASP Dependency Check, and JSpecify. Use
+`habit-hooks doctor` after copying Maven snippets to verify the local setup
+before relying on the gate.
 
 `habit-hooks report` is the local Sonar-style path: it writes Markdown, JSON,
 HTML, or SARIF under `target/habit-hooks` and stores the latest trend snapshot in
@@ -456,9 +476,11 @@ the build does not declare the Taikai dependency. Run `habit-hooks doctor` after
 copying snippets to confirm the analyzer is ready.
 
 `habit-hooks init --taikai` scaffolds a strict Spring Boot starter
-`ArchitectureTest.java`. The template follows Taikai's Java, logging, test, and
-Spring rule groups and intentionally enables more checks than every application
-will want. Remove or relax the generated rules that do not fit your architecture.
+`ArchitectureTest.java`. `habit-hooks init --spring-boot` scaffolds the same test
+and enables the analyzer in `.habit-hooks.yaml`. The template follows Taikai's
+Java, logging, test, and Spring rule groups and intentionally enables more checks
+than every application will want. Remove or relax the generated rules that do not
+fit your architecture.
 
 ```java
 @Test
@@ -609,14 +631,16 @@ Architecture flow and package boundaries are documented in
 
 ## Agent integration
 
-Add this to your `CLAUDE.md` or `AGENTS.md`:
+`habit-hooks init` writes `AGENTS.md` automatically when one does not already
+exist. If you maintain agent instructions by hand, include the same core loop:
 
 ```markdown
 ## Habit Hooks
 
 Before considering work complete, run habit-hooks. If the installed command is
-available, use `habit-hooks --all`. If not, use
-`java -jar target/habit-hooks-*-launcher.jar --all` from the repository root.
+available, use `habit-hooks --all`. If not, install habit-hooks or use
+`java -jar target/habit-hooks-*-launcher.jar --all` when the repository carries a
+project-local launcher.
 
 For larger changes, run `habit-hooks doctor` before analysis and generate
 follow-up artifacts with `habit-hooks report --no-fail` and

@@ -72,5 +72,11 @@ jobs:
       - name: Build fat JAR
         run: ./mvnw --batch-mode package -DskipTests
 
+      - name: Smoke Spring Boot initializer templates
+        run: |
+          sample="$(mktemp -d)"
+          mkdir -p "$sample/src/test/java"
+          (cd "$sample" && java -jar "$GITHUB_WORKSPACE"/target/habit-hooks-*-launcher.jar init --spring-boot --dry-run)
+
       - name: Run habit-hooks against itself
         run: java -jar target/habit-hooks-*-launcher.jar --all

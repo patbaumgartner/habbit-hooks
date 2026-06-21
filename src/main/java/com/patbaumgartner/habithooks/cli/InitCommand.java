@@ -11,9 +11,10 @@ import picocli.CommandLine.ParentCommand;
  *
  * <p>
  * Detects existing Checkstyle/PMD configurations, scaffolds missing ones, writes
- * {@code .habit-hooks.yaml}, an empty baseline, and optionally an
+ * {@code .habit-hooks.yaml}, {@code AGENTS.md}, an empty baseline, and optionally an
  * {@code ArchitectureTest.java} powered by Taikai or Maven snippets for optional
- * project-scoped analyzers.
+ * project-scoped analyzers. Spring Boot mode enables the full project-scoped analyzer set
+ * and scaffolds the supporting files.
  */
 @Command(name = "init", mixinStandardHelpOptions = true,
         description = "Scaffold habit-hooks configuration for this project")
@@ -31,10 +32,13 @@ public final class InitCommand implements Runnable {
     @Option(names = { "--maven-snippets" }, description = "Also scaffold optional Maven plugin snippets")
     private boolean mavenSnippets;
 
+    @Option(names = { "--spring-boot" }, description = "Enable Spring Boot analyzer defaults and support files")
+    private boolean springBoot;
+
     @Override
     public void run() {
         Path workingDir = parent.workingDir();
-        ProjectInitializer.Options options = new ProjectInitializer.Options(dryRun, taikai, mavenSnippets);
+        ProjectInitializer.Options options = new ProjectInitializer.Options(dryRun, taikai, mavenSnippets, springBoot);
         ProjectInitializer initializer = new ProjectInitializer(workingDir, options, System.out);
         initializer.initialize();
     }

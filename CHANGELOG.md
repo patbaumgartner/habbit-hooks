@@ -9,6 +9,17 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+### Added
+
+- `habit-hooks init` now scaffolds `AGENTS.md` when absent so coding agents get the local quality loop automatically
+- `habit-hooks init --spring-boot` now writes Spring Boot analyzer defaults, agent instructions, Maven snippets, and Taikai support files
+
+### Changed
+
+- Generated analyzer config now references the Maven profiles emitted by the snippet template for SpotBugs, CycloneDX, Error Prone, and OWASP Dependency Check
+- Spring Petclinic and agent-integration docs now use the first-class Spring Boot initialization workflow
+- CI now smoke-tests the packaged launcher against `init --spring-boot --dry-run`
+
 ## [0.1.12] - 2026-06-21
 
 ### Fixed

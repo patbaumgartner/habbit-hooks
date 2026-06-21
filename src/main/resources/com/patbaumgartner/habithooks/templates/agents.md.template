@@ -1,0 +1,65 @@
+# Project Agent Guide
+
+## Required Quality Gate
+
+Before considering coding work complete, run habit-hooks from the repository root.
+Use the changed-file loop while iterating:
+
+```bash
+habit-hooks
+```
+
+Use the full repository gate before handing work back:
+
+```bash
+habit-hooks --all
+```
+
+If the installed command is unavailable, install habit-hooks or use a
+project-local launcher JAR when this repository carries one:
+
+```bash
+java -jar target/habit-hooks-*-launcher.jar --all
+```
+
+For larger or cross-cutting changes, check analyzer readiness first:
+
+```bash
+habit-hooks doctor
+```
+
+After a failing run, generate focused follow-up artifacts when useful:
+
+```bash
+habit-hooks report --no-fail
+habit-hooks tasks --no-fail
+```
+
+## Working Rules
+
+- Treat every habit-hooks finding as actionable project feedback.
+- Fix reported findings before moving to unrelated work.
+- Create or update a task for each reported violation group.
+- Do not snooze baseline entries without explicit maintainer approval.
+- Do not disable Checkstyle or PMD rules just to quiet a finding.
+
+## Output Interpretation
+
+Coached sections describe the smell, the remediation guidance, and the affected
+locations. Uncoached rules still require attention; they are not informational.
+
+Use `habit-hooks tasks --format json --no-fail` when another agent needs a
+structured work queue, and rerun the task's `verificationCommand` after fixing a
+batch.
+
+## Optional Project Analyzers
+
+If this repository uses Maven-backed analyzers, run `habit-hooks doctor` after
+changing `pom.xml` or `.habit-hooks.yaml`. Copy snippets from
+`habit-hooks-maven-snippets.xml` before enabling analyzers such as SpotBugs,
+JaCoCo, CycloneDX, PIT, Spring Java Format, Error Prone, OWASP Dependency Check,
+JSpecify, or Taikai.
+
+Keep expensive analyzers off the tight local loop unless the project explicitly
+requires them for every change. Prefer enabling them for full-repository,
+pre-push, CI, or nightly validation.

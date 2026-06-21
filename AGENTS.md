@@ -93,9 +93,9 @@ java -jar target/habit-hooks-*-launcher.jar --help
 ## Code conventions
 
 - Java 25 baseline
-- Max method length: 25
-- Max parameters: 5
-- Max cyclomatic complexity: 8
+- Max method length: 20
+- Max parameters: 4
+- Max cyclomatic complexity: 6
 - Prefer `Optional` or empty collections over `null` returns
 - Public API should have Javadoc
 - Formatting enforced by Spring Java Format

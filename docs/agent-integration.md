@@ -15,11 +15,17 @@ habit-hooks tasks --no-fail
 ```
 
 For small changes, `habit-hooks --all` is the minimum completion gate. If the
-installed command is unavailable, use the launcher JAR from the repository root:
+installed command is unavailable, install habit-hooks or use a project-local
+launcher JAR when the repository carries one:
 
 ```bash
 java -jar target/habit-hooks-*-launcher.jar --all
 ```
+
+`habit-hooks init` writes an `AGENTS.md` file when one does not already exist.
+For Spring Boot projects, prefer `habit-hooks init --spring-boot` so the agent
+guide, `.habit-hooks.yaml`, Taikai architecture test, and Maven snippets all
+describe the same analyzer surface.
 
 ## Interpretation rules
 
@@ -44,3 +50,43 @@ Each task groups current findings by rule and includes:
 
 Agents should work tasks in export order, rerun the verification command after
 each batch, and regenerate tasks only after the current batch is fixed.
+
+Example task export:
+
+```json
+[
+  {
+    "id": "HH-001",
+    "title": "Fix pmd:GodClass",
+    "ruleId": "pmd:GodClass",
+    "dimension": "maintainability",
+    "severity": "low",
+    "count": 1,
+    "verificationCommand": "habit-hooks --all",
+    "acceptanceCriteria": [
+      "Resolve all current findings for pmd:GodClass.",
+      "Keep the change focused and behavior-preserving unless the finding exposes a real bug.",
+      "Re-run habit-hooks --all and confirm the rule no longer appears."
+    ],
+    "locations": ["src/main/java/com/example/OrderService.java:42"]
+  }
+]
+```
+
+See [Artifact contracts](artifacts.md) for the stable report and task shapes.
+
+## Spring Boot agent loop
+
+Spring Boot projects usually need Maven-backed analyzers ready before the agent
+can trust a full run. After copying snippets into `pom.xml`, use this loop:
+
+```bash
+./mvnw --batch-mode --no-transfer-progress spring-javaformat:apply
+habit-hooks doctor
+habit-hooks --all
+habit-hooks report --format html --no-fail
+habit-hooks tasks --format json --no-fail
+```
+
+If `doctor` reports missing Maven profiles or dependencies, fix the build setup
+before changing application code.
