@@ -16,12 +16,12 @@ final class MavenOutputSummary {
 
     static String summarize(String output, Path workingDir, Optional<Path> outputLog) {
         String summary = output.lines()
-                .map(String::strip)
-                .filter(MavenOutputSummary::isUsefulOutputLine)
-                .reduce((previous, current) -> current)
-                .orElse("");
+            .map(String::strip)
+            .filter(MavenOutputSummary::isUsefulOutputLine)
+            .reduce((previous, current) -> current)
+            .orElse("");
         String logMessage = outputLog.map(path -> " See " + ReportSupport.relativize(path, workingDir) + ".")
-                .orElse("");
+            .orElse("");
         return summary.isBlank() ? logMessage : " Last Maven output: " + summary + logMessage;
     }
 

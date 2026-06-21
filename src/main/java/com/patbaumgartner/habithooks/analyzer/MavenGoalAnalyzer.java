@@ -16,8 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 /**
- * Project-scoped analyzer that runs a Maven goal and normalizes the resulting
- * report into
+ * Project-scoped analyzer that runs a Maven goal and normalizes the resulting report into
  * habit-hooks violations.
  */
 public non-sealed class MavenGoalAnalyzer implements Analyzer {
@@ -36,12 +35,10 @@ public non-sealed class MavenGoalAnalyzer implements Analyzer {
 
     /**
      * Creates a Maven-backed analyzer.
-     * 
-     * @param toolPrefix   prefix for normalized rule IDs
-     * @param goal         Maven goal or phase to execute
-     * @param reportFile   report file to parse after the goal runs, relative to
-     *                     project
-     *                     root
+     * @param toolPrefix prefix for normalized rule IDs
+     * @param goal Maven goal or phase to execute
+     * @param reportFile report file to parse after the goal runs, relative to project
+     * root
      * @param reportParser parser for the configured report format
      */
     public MavenGoalAnalyzer(String toolPrefix, String goal, String reportFile, ReportParser reportParser) {
@@ -90,7 +87,8 @@ public non-sealed class MavenGoalAnalyzer implements Analyzer {
             Process process = startProcess(command, workingDir);
             String output = readOutput(process);
             return new ExecutionResult(process.waitFor(), output);
-        } catch (IOException | InterruptedException ex) {
+        }
+        catch (IOException | InterruptedException ex) {
             LOGGER.error("Failed to run {} Maven goal '{}': {}", toolPrefix, goal, ex.getMessage(), ex);
             if (ex instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
@@ -122,7 +120,8 @@ public non-sealed class MavenGoalAnalyzer implements Analyzer {
             Files.createDirectories(reportPath.getParent());
             Files.writeString(reportPath, output, StandardCharsets.UTF_8);
             return Optional.of(reportPath);
-        } catch (IOException ex) {
+        }
+        catch (IOException ex) {
             LOGGER.error("Could not write {} output report {}: {}", toolPrefix, reportPath, ex.getMessage(), ex);
             return Optional.empty();
         }
@@ -155,7 +154,8 @@ public non-sealed class MavenGoalAnalyzer implements Analyzer {
                         goalFailedMessage(execution.output(), workingDir, outputLog)));
             }
             return violations;
-        } catch (IOException | ParserConfigurationException | SAXException e) {
+        }
+        catch (IOException | ParserConfigurationException | SAXException e) {
             LOGGER.error("Failed to parse {} report {}: {}", toolPrefix, reportPath, e.getMessage(), e);
             return List.of(buildViolation("report-unreadable", reportFile, 1,
                     "Could not parse " + toolPrefix + " report: " + e.getMessage()));
@@ -168,10 +168,8 @@ public non-sealed class MavenGoalAnalyzer implements Analyzer {
             return List.of();
         }
         return List
-                .of(buildViolation("report-missing", reportFile, 1,
-                        "Maven goal '" + goal + "' failed and did not produce "
-                                + reportFile + "."
-                                + MavenOutputSummary.summarize(execution.output(), workingDir, outputLog)));
+            .of(buildViolation("report-missing", reportFile, 1, "Maven goal '" + goal + "' failed and did not produce "
+                    + reportFile + "." + MavenOutputSummary.summarize(execution.output(), workingDir, outputLog)));
     }
 
     private List<Violation> lifecycleBlockedViolation(ExecutionResult execution, Path workingDir,
@@ -196,7 +194,8 @@ public non-sealed class MavenGoalAnalyzer implements Analyzer {
                 out.transferTo(OutputStream.nullOutputStream());
             }
             return process.waitFor() == 0;
-        } catch (IOException | InterruptedException ex) {
+        }
+        catch (IOException | InterruptedException ex) {
             if (ex instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
             }
@@ -210,14 +209,13 @@ public non-sealed class MavenGoalAnalyzer implements Analyzer {
 
         /**
          * Parses a report file into normalized violations.
-         * 
          * @param reportPath report file path
          * @param workingDir project root
          * @param toolPrefix tool prefix for rule IDs
          * @return normalized violations
-         * @throws IOException                  on file IO failure
+         * @throws IOException on file IO failure
          * @throws ParserConfigurationException on XML parser setup failure
-         * @throws SAXException                 on XML parsing failure
+         * @throws SAXException on XML parsing failure
          */
         List<Violation> parse(Path reportPath, Path workingDir, String toolPrefix)
                 throws IOException, ParserConfigurationException, SAXException;
