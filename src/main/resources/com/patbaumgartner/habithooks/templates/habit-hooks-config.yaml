@@ -26,3 +26,36 @@ analyzers:
     enabled: true
     rulesets:
       - pmd-ruleset.xml
+  taikai:
+    enabled: false
+    testClass: ArchitectureTest
+  spotbugs:
+    enabled: false
+    goal: spotbugs:spotbugs
+    reportFile: target/spotbugsXml.xml
+  jacoco:
+    enabled: false
+    goal: test jacoco:report
+    reportFile: target/site/jacoco/jacoco.xml
+  cyclonedx:
+    enabled: false
+    goal: package cyclonedx:makeAggregateBom
+    reportFile: target/bom.json
+  pitest:
+    enabled: false
+    goal: -Pmutation-test test-compile org.pitest:pitest-maven:mutationCoverage
+    reportFile: target/pit-reports/mutations.xml
+  spring-javaformat:
+    enabled: false
+    goal: spring-javaformat:validate
+    reportFile: target/habit-hooks/spring-javaformat.log
+  errorprone:
+    enabled: false
+    goal: compile
+    reportFile: target/habit-hooks/errorprone.log
+  owasp:
+    enabled: false
+    goal: org.owasp:dependency-check-maven:check -Dformat=JSON
+    reportFile: target/dependency-check-report.json
+  jspecify:
+    enabled: false

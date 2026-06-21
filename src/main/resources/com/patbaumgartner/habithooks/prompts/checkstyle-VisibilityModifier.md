@@ -9,5 +9,4 @@ on the internal representation. Changing the representation requires touching al
 3. Prefer immutable value objects — records are ideal for data carriers.
 4. When mutation is needed, validate in the setter instead of trusting callers.
 
-Encapsulation is not about hiding — it's about owning your invariants. A class that
-lets anyone write to its fields is not an object; it's a struct with extra steps.
+Encapsulation is not about hiding — it is about owning invariants. A class that lets callers write directly to its fields cannot reliably validate or coordinate state changes.

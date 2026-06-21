@@ -20,5 +20,5 @@ OrderNotifier      — sends confirmations
 OrderService       — thin orchestrator delegating to the above
 ```
 
-God classes are the most reliable predictor of long-term maintenance pain.
-Split early; splitting late is painful.
+God classes are a strong signal of long-term maintenance risk.
+Split responsibilities while the boundaries are still understandable.

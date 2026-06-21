@@ -74,6 +74,14 @@ public class AnalyzerConfig {
     @JsonProperty("testClass")
     private String testClass = "ArchitectureTest";
 
+    /** Maven goal or phase for Maven-backed analyzers. */
+    @JsonProperty("goal")
+    private String goal;
+
+    /** Report path for Maven-backed analyzers, relative to the project root. */
+    @JsonProperty("reportFile")
+    private String reportFile;
+
     /** Returns the Taikai test class simple name. */
     public String getTestClass() {
         if (testClass == null || testClass.isBlank()) {
@@ -85,6 +93,32 @@ public class AnalyzerConfig {
     /** Sets the Taikai test class simple name. */
     public void setTestClass(String testClass) {
         this.testClass = testClass == null || testClass.isBlank() ? "ArchitectureTest" : testClass;
+    }
+
+    /** Returns the Maven goal override, or {@code null} when unset. */
+    public String getGoal() {
+        if (goal == null || goal.isBlank()) {
+            return null;
+        }
+        return goal;
+    }
+
+    /** Sets the Maven goal override. */
+    public void setGoal(String goal) {
+        this.goal = goal == null || goal.isBlank() ? null : goal;
+    }
+
+    /** Returns the report file override, or {@code null} when unset. */
+    public String getReportFile() {
+        if (reportFile == null || reportFile.isBlank()) {
+            return null;
+        }
+        return reportFile;
+    }
+
+    /** Sets the report file override. */
+    public void setReportFile(String reportFile) {
+        this.reportFile = reportFile == null || reportFile.isBlank() ? null : reportFile;
     }
 
 }

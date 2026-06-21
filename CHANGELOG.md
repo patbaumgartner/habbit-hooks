@@ -7,6 +7,21 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+### Added
+
+- Maven-backed project analyzers for SpotBugs, JaCoCo, CycloneDX, OWASP Dependency Check, PIT, Spring Java Format, and Error Prone
+- JSpecify adoption analyzer for nullness annotation setup
+- Built-in coaching prompts for Maven-backed analyzer meta-rules and JSpecify adoption findings
+- Local quality reports in Markdown, JSON, HTML, and SARIF via `habit-hooks report`
+- Agent task export via `habit-hooks tasks`
+- Analyzer prerequisite checks via `habit-hooks doctor`
+- Maven dependency and plugin update reporting via `habit-hooks dependencies`
+- Optional Maven plugin/dependency snippet scaffolding via `habit-hooks init --maven-snippets`
+
+### Changed
+
+- README now documents the expanded analyzer configuration, coached prompt coverage, rule severity semantics, and Maven snippet workflow
+
 ## [0.1.0] - 2026-06-20
 
 ### Added

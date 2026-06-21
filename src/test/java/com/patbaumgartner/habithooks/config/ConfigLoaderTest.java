@@ -120,4 +120,23 @@ class ConfigLoaderTest {
         assertThat(config.getAnalyzers().get("taikai").getTestClass()).isEqualTo("MyArchTest");
     }
 
+    @Test
+    void loadsMavenBackedAnalyzerOverrides() throws Exception {
+        Path configFile = tempDir.resolve(".habit-hooks.yaml");
+        Files.writeString(configFile, """
+                analyzers:
+                  spotbugs:
+                    enabled: true
+                    goal: verify spotbugs:spotbugs
+                    reportFile: build/spotbugs.xml
+                """);
+
+        HabitHooksConfig config = ConfigLoader.load(null, tempDir);
+        AnalyzerConfig spotbugs = config.getAnalyzers().get("spotbugs");
+
+        assertThat(spotbugs.isEnabled()).isTrue();
+        assertThat(spotbugs.getGoal()).isEqualTo("verify spotbugs:spotbugs");
+        assertThat(spotbugs.getReportFile()).isEqualTo("build/spotbugs.xml");
+    }
+
 }

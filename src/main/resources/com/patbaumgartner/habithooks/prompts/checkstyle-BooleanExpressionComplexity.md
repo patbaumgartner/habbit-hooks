@@ -1,6 +1,6 @@
 # checkstyle BooleanExpressionComplexity
 
-A boolean expression with many `&&`, `||`, `!`, `&`, and `|` operators is hard to read correctly and even harder to test exhaustively. Each additional operator doubles the number of cases a reviewer must hold in their head.
+A boolean expression with many `&&`, `||`, `!`, `&`, and `|` operators is hard to read correctly and harder to test thoroughly. Each extra term adds another condition or interaction a reviewer must reason about.
 
 **How to fix it:**
 

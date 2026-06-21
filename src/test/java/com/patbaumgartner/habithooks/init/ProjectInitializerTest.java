@@ -26,7 +26,7 @@ class ProjectInitializerTest {
     }
 
     @Test
-    void writesScaffoldFilesWhenAbsent() {
+    void writesScaffoldFilesWhenAbsent() throws IOException {
         Output output = run(false, false);
 
         assertThat(output.text()).contains("initialized");
@@ -34,6 +34,21 @@ class ProjectInitializerTest {
         assertThat(Files.exists(tempDir.resolve("pmd-ruleset.xml"))).isTrue();
         assertThat(Files.exists(tempDir.resolve(".habit-hooks.yaml"))).isTrue();
         assertThat(Files.exists(tempDir.resolve(".habit-hooks-baseline.json"))).isTrue();
+        assertThat(Files.exists(tempDir.resolve("habit-hooks-maven-snippets.xml"))).isFalse();
+        assertThat(Files.readString(tempDir.resolve(".habit-hooks.yaml"))).contains("spotbugs:", "spring-javaformat:");
+    }
+
+    @Test
+    void mavenSnippetsAreOptIn() throws IOException {
+        run(false, false, true);
+
+        Path snippets = tempDir.resolve("habit-hooks-maven-snippets.xml");
+        assertThat(Files.exists(snippets)).isTrue();
+        String content = Files.readString(snippets);
+        assertThat(content).contains("spotbugs-maven-plugin");
+        assertThat(content).contains("jacoco-maven-plugin");
+        assertThat(content).contains("org.jspecify");
+        assertThat(content).contains("com.enofex");
     }
 
     @Test
@@ -64,9 +79,14 @@ class ProjectInitializerTest {
     }
 
     private Output run(boolean dryRun, boolean taikai) {
+        return run(dryRun, taikai, false);
+    }
+
+    private Output run(boolean dryRun, boolean taikai, boolean mavenSnippets) {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         PrintStream out = new PrintStream(buffer, true, StandardCharsets.UTF_8);
-        new ProjectInitializer(tempDir, dryRun, taikai, out).initialize();
+        ProjectInitializer.Options options = new ProjectInitializer.Options(dryRun, taikai, mavenSnippets);
+        new ProjectInitializer(tempDir, options, out).initialize();
         return new Output(buffer.toString(StandardCharsets.UTF_8));
     }
 

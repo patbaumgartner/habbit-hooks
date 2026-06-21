@@ -2,14 +2,10 @@ package com.patbaumgartner.habithooks.cli;
 
 import com.patbaumgartner.habithooks.analyzer.AnalysisOrchestrator;
 import com.patbaumgartner.habithooks.analyzer.Analyzer;
-import com.patbaumgartner.habithooks.analyzer.CheckstyleAnalyzer;
-import com.patbaumgartner.habithooks.analyzer.PmdAnalyzer;
-import com.patbaumgartner.habithooks.analyzer.TaikaiAnalyzer;
 import com.patbaumgartner.habithooks.baseline.BaselineManager;
 import com.patbaumgartner.habithooks.coaching.CoachingEngine;
 import com.patbaumgartner.habithooks.coaching.CoachingRenderer;
 import com.patbaumgartner.habithooks.coaching.PromptLoader;
-import com.patbaumgartner.habithooks.config.AnalyzerConfig;
 import com.patbaumgartner.habithooks.config.ConfigLoader;
 import com.patbaumgartner.habithooks.config.HabitHooksConfig;
 import com.patbaumgartner.habithooks.model.AnalysisResult;
@@ -18,9 +14,7 @@ import com.patbaumgartner.habithooks.model.Violation;
 import com.patbaumgartner.habithooks.scope.FileScope;
 import com.patbaumgartner.habithooks.update.SelfUpdater;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Callable;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -34,7 +28,8 @@ import picocli.CommandLine.ScopeType;
  */
 @Command(name = "habit-hooks", mixinStandardHelpOptions = true, versionProvider = VersionProvider.class,
         description = "Automated quality checks that nudge Java AI agents toward better habits.",
-        subcommands = { InitCommand.class, BaselineCommand.class })
+        subcommands = { InitCommand.class, BaselineCommand.class, ReportCommand.class, TasksCommand.class,
+                DoctorCommand.class, DependenciesCommand.class })
 public final class HabitHooksCommand implements Callable<Integer> {
 
     @Option(names = { "--config" }, description = "Path to the habit-hooks config file", scope = ScopeType.INHERIT)
@@ -67,30 +62,37 @@ public final class HabitHooksCommand implements Callable<Integer> {
 
     private Integer runChecks() {
         Path workingDir = workingDir();
-        HabitHooksConfig config = ConfigLoader.load(configPath, workingDir);
-        List<Path> files = resolveScope(workingDir, config);
-        List<Analyzer> analyzers = createAnalyzers(config);
+        AnalysisRun run = analyzeConfigured(workingDir);
 
-        if (files.isEmpty()) {
-            System.out.println("No Java files to analyze.");
+        if (run.skipped()) {
+            System.out.println(run.skipMessage());
             return 0;
         }
+
+        PromptLoader promptLoader = new PromptLoader(workingDir.resolve(run.config().getPromptsDir()));
+        List<CoachingGroup> groups = new CoachingEngine(promptLoader).coach(run.result());
+        new CoachingRenderer(System.out).render(groups);
+
+        return run.hasFailures() ? 1 : 0;
+    }
+
+    AnalysisRun analyzeConfigured(Path workingDir) {
+        HabitHooksConfig config = ConfigLoader.load(configPath, workingDir);
+        List<Path> files = resolveScope(workingDir, config);
+        List<Analyzer> analyzers = AnalyzerFactory.create(config);
+
         if (analyzers.isEmpty()) {
-            System.out.println("No analyzers enabled in configuration.");
-            return 0;
+            return AnalysisRun.skipped(config, "No analyzers enabled in configuration.");
+        }
+        if (files.isEmpty() && analyzers.stream().allMatch(Analyzer::requiresFiles)) {
+            return AnalysisRun.skipped(config, "No Java files to analyze.");
         }
 
         List<Violation> violations = runAnalysis(workingDir, files, analyzers);
         List<Violation> filtered = new BaselineManager(workingDir).filter(violations);
         RuleFilter ruleFilter = new RuleFilter(config.getRules());
         List<Violation> configured = ruleFilter.apply(filtered);
-
-        AnalysisResult result = new AnalysisResult(configured, files.size());
-        PromptLoader promptLoader = new PromptLoader(workingDir.resolve(config.getPromptsDir()));
-        List<CoachingGroup> groups = new CoachingEngine(promptLoader).coach(result);
-        new CoachingRenderer(System.out).render(groups);
-
-        return ruleFilter.hasFailures(configured) ? 1 : 0;
+        return new AnalysisRun(config, new AnalysisResult(configured, files.size()), ruleFilter, false, "");
     }
 
     /**
@@ -99,6 +101,10 @@ public final class HabitHooksCommand implements Callable<Integer> {
      */
     Path workingDir() {
         return Path.of(System.getProperty("user.dir", "."));
+    }
+
+    String configPath() {
+        return configPath;
     }
 
     /**
@@ -110,7 +116,7 @@ public final class HabitHooksCommand implements Callable<Integer> {
     List<Violation> runAnalysis(Path workingDir) {
         HabitHooksConfig config = ConfigLoader.load(configPath, workingDir);
         List<Path> files = resolveScope(workingDir, config);
-        return runAnalysis(workingDir, files, createAnalyzers(config));
+        return runAnalysis(workingDir, files, AnalyzerFactory.create(config));
     }
 
     private List<Violation> runAnalysis(Path workingDir, List<Path> files, List<Analyzer> analyzers) {
@@ -118,30 +124,6 @@ public final class HabitHooksCommand implements Callable<Integer> {
             return List.of();
         }
         return new AnalysisOrchestrator(analyzers).analyze(files, workingDir).violations();
-    }
-
-    private static List<Analyzer> createAnalyzers(HabitHooksConfig config) {
-        List<Analyzer> analyzers = new ArrayList<>();
-        Map<String, AnalyzerConfig> analyzerConfig = config.getAnalyzers();
-
-        AnalyzerConfig checkstyle = analyzerConfig.getOrDefault("checkstyle", new AnalyzerConfig());
-        if (checkstyle.isEnabled()) {
-            analyzers.add(new CheckstyleAnalyzer(checkstyle.getConfigFile()));
-        }
-
-        AnalyzerConfig pmd = analyzerConfig.getOrDefault("pmd", new AnalyzerConfig());
-        if (pmd.isEnabled()) {
-            analyzers.add(new PmdAnalyzer(pmd.getRulesets()));
-        }
-
-        if (analyzerConfig.containsKey("taikai")) {
-            AnalyzerConfig taikai = analyzerConfig.get("taikai");
-            if (taikai.isEnabled()) {
-                analyzers.add(new TaikaiAnalyzer(taikai.getTestClass()));
-            }
-        }
-
-        return List.copyOf(analyzers);
     }
 
     private List<Path> resolveScope(Path workingDir, HabitHooksConfig config) {

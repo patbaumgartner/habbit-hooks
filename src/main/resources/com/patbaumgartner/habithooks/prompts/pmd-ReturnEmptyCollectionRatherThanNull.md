@@ -1,7 +1,7 @@
 # pmd ReturnEmptyCollectionRatherThanNull
 
 Returning `null` for a missing collection forces every caller to null-check before iterating.
-An empty collection is the correct representation of "nothing here" — it composes correctly with streams, for-each, and size checks with no special casing.
+An empty collection is the usual representation of "nothing here" — it composes correctly with streams, for-each, and size checks with no special casing.
 
 **How to fix it:**
 

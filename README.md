@@ -17,10 +17,12 @@ AI coding agents frequently ignore long rule documents. Asking them to hold an
 entire book's worth of coding advice is at best futile, at worst pollutes the
 context window and degrades performance.
 
-**habit-hooks** wraps your existing Java static analysis tools — **Checkstyle**
-and **PMD** — to create the trigger, but instead of providing only a metric, it
-gives actionable coaching on *why* the violation is a smell and *how* to fix it.
-This creates AI behaviour that looks like human habits with similar effects.
+**habit-hooks** wraps your existing Java quality tools — starting with
+**Checkstyle** and **PMD**, and extending to project-level Maven signals such as
+SpotBugs, JaCoCo, CycloneDX, PIT, Spring Java Format, Error Prone, JSpecify, and
+Taikai — to create the trigger. Instead of providing only a metric, it gives actionable coaching on
+*why* the finding matters and *how* to fix it. This creates AI behaviour that
+looks like human habits with similar effects.
 
 Using habit-hooks:
 
@@ -28,6 +30,8 @@ Using habit-hooks:
 - **Improves AI performance** — agents start from clean code and need less context
 - **Reduces token usage** — clean code means less reading to understand intent
 - **Encourages architecture discipline** — pairs naturally with [Taikai](#taikai-integration)
+- **Turns quality tools into an AI harness** — agents see focused feedback from the
+  build, tests, coverage, formatting, mutation testing, and supply-chain checks
 
 > Inspired by [devill/habit-hooks](https://github.com/devill/habit-hooks) — the original TypeScript edition.
 
@@ -81,8 +85,11 @@ habit-hooks init
 ```
 
 `init` detects existing Checkstyle/PMD configurations, scaffolds starter configs
-for the missing ones, writes `.habit-hooks.yaml`, an empty baseline, and offers
-to add Maven plugin snippets. Run with `--dry-run` to preview every write.
+for the missing ones, writes `.habit-hooks.yaml`, and creates an empty baseline.
+Run with `--dry-run` to preview every write. Add `--maven-snippets` when you want
+a reference file with optional Maven plugin/dependency fragments for the
+project-scoped analyzers. Add `--taikai` when you want a starter architecture
+test in `src/test/java`.
 
 Then:
 
@@ -134,9 +141,10 @@ Use `--dry-run` on either script to preview actions.
 
 ## What it catches
 
-habit-hooks wraps your project's Checkstyle and PMD. Whatever rules those tools
-fire — from your `checkstyle.xml` and `pmd-ruleset.xml` — is what habit-hooks
-surfaces. What it adds on top is *why this is a smell* and *how to fix it*.
+habit-hooks wraps your project's Checkstyle and PMD rule configurations, plus
+optional project-scoped signals from Maven-backed analyzers. Whatever those tools
+report is what habit-hooks surfaces. What it adds on top is *why this is a smell*
+and *how to fix it*.
 
 ### Coached rules
 
@@ -164,6 +172,40 @@ surfaces. What it adds on top is *why this is a smell* and *how to fix it*.
 | pmd        | `pmd:LooseCoupling`                          | Concrete type in API             |
 | pmd        | `pmd:ArrayIsStoredDirectly`                  | Array stored without copying     |
 | pmd        | `pmd:PreserveStackTrace`                     | Lost stack trace on rethrow      |
+| spotbugs   | `spotbugs:goal-failed`                       | SpotBugs goal failed             |
+| spotbugs   | `spotbugs:report-missing`                    | SpotBugs report missing          |
+| spotbugs   | `spotbugs:report-unreadable`                 | SpotBugs report unreadable       |
+| jacoco     | `jacoco:LineCoverage`                        | Line coverage gap                |
+| jacoco     | `jacoco:goal-failed`                         | JaCoCo goal failed               |
+| jacoco     | `jacoco:report-missing`                      | JaCoCo report missing            |
+| jacoco     | `jacoco:report-unreadable`                   | JaCoCo report unreadable         |
+| cyclonedx  | `cyclonedx:InvalidBom`                       | Invalid SBOM                     |
+| cyclonedx  | `cyclonedx:MissingComponents`                | SBOM missing components          |
+| cyclonedx  | `cyclonedx:goal-failed`                      | CycloneDX goal failed            |
+| cyclonedx  | `cyclonedx:report-missing`                   | CycloneDX report missing         |
+| cyclonedx  | `cyclonedx:report-unreadable`                | CycloneDX report unreadable      |
+| pitest     | `pitest:SURVIVED`                            | Surviving mutation               |
+| pitest     | `pitest:NO_COVERAGE`                         | Mutation without coverage        |
+| pitest     | `pitest:goal-failed`                         | PIT goal failed                  |
+| pitest     | `pitest:report-missing`                      | PIT report missing               |
+| pitest     | `pitest:report-unreadable`                   | PIT report unreadable            |
+| spring-javaformat | `spring-javaformat:Formatting`        | Formatting drift                 |
+| spring-javaformat | `spring-javaformat:goal-failed`       | Formatter goal failed            |
+| spring-javaformat | `spring-javaformat:report-missing`    | Formatter output missing         |
+| spring-javaformat | `spring-javaformat:report-unreadable` | Formatter output unreadable      |
+| errorprone | `errorprone:goal-failed`                     | Error Prone compile failed       |
+| errorprone | `errorprone:report-missing`                  | Error Prone output missing       |
+| errorprone | `errorprone:report-unreadable`               | Error Prone output unreadable    |
+| owasp      | `owasp:CveCritical`                          | Critical CVE                     |
+| owasp      | `owasp:CveHigh`                              | High CVE                         |
+| owasp      | `owasp:CveMedium`                            | Medium CVE                       |
+| owasp      | `owasp:CveLow`                               | Low CVE                          |
+| owasp      | `owasp:SuppressedVulnerability`              | Suppressed vulnerability         |
+| owasp      | `owasp:goal-failed`                          | OWASP scan failed                |
+| owasp      | `owasp:report-missing`                       | OWASP report missing             |
+| owasp      | `owasp:report-unreadable`                    | OWASP report unreadable          |
+| jspecify   | `jspecify:DependencyMissing`                 | JSpecify dependency missing      |
+| jspecify   | `jspecify:NotAdopted`                        | JSpecify not adopted             |
 
 ### Uncoached rules
 
@@ -192,6 +234,16 @@ habit-hooks --update              download and install the latest release
 
 habit-hooks init                  scaffold tool configs and habit-hooks config
 habit-hooks init --dry-run        show every intended write without touching disk
+habit-hooks init --taikai         scaffold a Taikai ArchitectureTest.java
+habit-hooks init --maven-snippets scaffold optional Maven plugin snippets
+
+habit-hooks report                write target/habit-hooks/report.markdown
+habit-hooks report --format html  write a static local quality dashboard
+habit-hooks report --format sarif write SARIF for code-scanning consumers
+habit-hooks tasks                 export grouped agent task batches
+habit-hooks doctor                check analyzer prerequisites
+habit-hooks dependencies          report Maven dependency/plugin updates
+habit-hooks dependencies --apply  apply Maven parent/property updates
 
 habit-hooks baseline status       summarise current baseline contents
 habit-hooks baseline snooze       add current violations to the baseline
@@ -235,11 +287,65 @@ analyzers:
   taikai:                      # opt-in: runs ArchitectureTest via Maven
     enabled: false
     testClass: ArchitectureTest
+  spotbugs:                    # opt-in: parses target/spotbugsXml.xml
+    enabled: false
+    goal: spotbugs:spotbugs
+    reportFile: target/spotbugsXml.xml
+  jacoco:                      # opt-in: parses target/site/jacoco/jacoco.xml
+    enabled: false
+    goal: test jacoco:report
+    reportFile: target/site/jacoco/jacoco.xml
+  cyclonedx:                   # opt-in: validates target/bom.json
+    enabled: false
+    goal: package cyclonedx:makeAggregateBom
+    reportFile: target/bom.json
+  pitest:                      # opt-in: expensive mutation testing
+    enabled: false
+    goal: -Pmutation-test test-compile org.pitest:pitest-maven:mutationCoverage
+    reportFile: target/pit-reports/mutations.xml
+  spring-javaformat:           # opt-in: captures formatter validation output
+    enabled: false
+    goal: spring-javaformat:validate
+    reportFile: target/habit-hooks/spring-javaformat.log
+  errorprone:                  # opt-in: captures compiler/Error Prone output
+    enabled: false
+    goal: compile
+    reportFile: target/habit-hooks/errorprone.log
+  owasp:                       # opt-in: parses target/dependency-check-report.json
+    enabled: false
+    goal: org.owasp:dependency-check-maven:check -Dformat=JSON
+    reportFile: target/dependency-check-report.json
+  jspecify:                    # opt-in: checks nullness annotation adoption
+    enabled: false
 ```
 
 Per-rule knobs: `disabled`, `include`, `exclude`, `severity`.
+`disabled: true` removes that rule's violations from output. `include` and
+`exclude` are file globs applied to each violation path. `severity: warning`
+keeps the finding visible but exits zero; unset severity or any non-`warning`
+value makes the rule fail the run.
 Everything else (e.g. method length threshold) belongs in your
 `checkstyle.xml` / `pmd-ruleset.xml`.
+
+Maven-backed analyzers are project-scoped. They can run even when the changed-file
+scope contains no Java files. This is useful for checks whose feedback is about the
+whole build: coverage, formatting, mutation testing, SBOM validity, or architecture
+tests. The JSpecify analyzer is also project-scoped; it checks whether the annotation
+dependency is present and whether main sources have started using nullness markers.
+
+Keep expensive analyzers disabled for tight local loops and enable them in stricter
+contexts such as `--all`, pre-push, CI self-dogfood, or nightly quality sweeps.
+Enable the matching Maven plugin or dependency before turning on a Maven-backed
+analyzer. `habit-hooks init --maven-snippets` writes
+`habit-hooks-maven-snippets.xml`, a reference file with copyable fragments for
+JaCoCo, SpotBugs, CycloneDX, OWASP Dependency Check, PIT, Spring Java Format,
+Error Prone, JSpecify, and Taikai. It does not edit `pom.xml` automatically.
+
+`habit-hooks report` is the local Sonar-style path: it writes Markdown, JSON,
+HTML, or SARIF under `target/habit-hooks` and stores the latest trend snapshot in
+`target/habit-hooks/history/latest.json`. `habit-hooks tasks` turns findings into
+small rule-grouped work items for AI agents. `habit-hooks doctor` checks whether
+enabled analyzers can run before an agent spends time on a broken local setup.
 
 If you pass `--config <path>`, absolute paths are used as-is and relative paths
 are resolved from the working directory.
@@ -318,7 +424,8 @@ void shouldFulfillArchitectureConstraints() {
 }
 ```
 
-Add the dependency manually:
+Add the dependency manually, or generate reference snippets with
+`habit-hooks init --maven-snippets`:
 
 ```xml
 <dependency>
@@ -511,10 +618,15 @@ but will still point in the right direction even if you adjust the thresholds.
 
 ## Status
 
-Pre-release — `0.1.0` is under active development.
-Implemented today:
+Pre-release — active development in the `0.x` line.
+Current implementation:
 
 - Checkstyle and PMD analyzer wrapping with coaching
+- Maven-backed project analyzers for SpotBugs, JaCoCo, CycloneDX, OWASP Dependency Check, PIT, Spring Java Format, and Error Prone
+- JSpecify adoption analyzer for nullness annotation setup
+- Built-in coaching prompts for Maven-backed analyzer meta-rules and JSpecify adoption findings
+- Local report, SARIF, trend snapshot, doctor, dependency-update report, and agent-task export commands
+- Optional Maven snippet scaffolding via `habit-hooks init --maven-snippets`
 - Baseline management (`status`, `snooze`, `prune`)
 - CI quality gates (Checkstyle, PMD/CPD, SpotBugs, tests, coverage)
 - Integration test lifecycle via Maven Failsafe (`*IT.java`)
@@ -530,7 +642,6 @@ Implemented today:
 Planned next:
 
 - Additional coached rule coverage
-- First-party SpotBugs coaching prompts
 - Startup benchmark trend visualization in published CI artifacts
 
 ---

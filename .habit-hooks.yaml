@@ -24,6 +24,22 @@ analyzers:
     enabled: true
     rulesets:
       - pmd-ruleset.xml
-  # taikai:                    # opt-in: runs ArchitectureTest via Maven
-  #   enabled: true
-  #   testClass: ArchitectureTest
+  taikai:                      # opt-in: runs ArchitectureTest via Maven
+    enabled: false
+    testClass: ArchitectureTest
+  spotbugs:
+    enabled: false             # project-scoped: parses target/spotbugsXml.xml
+  jacoco:
+    enabled: false             # project-scoped: parses target/site/jacoco/jacoco.xml
+  cyclonedx:
+    enabled: false             # project-scoped: validates target/bom.json
+  pitest:
+    enabled: false             # expensive: mutation testing via Maven profile
+  spring-javaformat:
+    enabled: false             # project-scoped: captures formatter validation output
+  errorprone:
+    enabled: false             # project-scoped: captures compiler/Error Prone output
+  owasp:
+    enabled: false             # project-scoped: parses target/dependency-check-report.json
+  jspecify:
+    enabled: false             # project-scoped: checks nullness annotation adoption

@@ -49,7 +49,39 @@ public final class RuleTitles {
             Map.entry("pmd:UnusedPrivateField", "Unused Private Field"),
             Map.entry("pmd:UnusedLocalVariable", "Unused Local Variable"),
             // PMD — duplication
-            Map.entry("pmd:CopyPaste", "Duplicated Code"));
+            Map.entry("pmd:CopyPaste", "Duplicated Code"),
+            // Maven-backed project checks
+            Map.entry("spotbugs:goal-failed", "SpotBugs Goal Failed"),
+            Map.entry("spotbugs:report-missing", "SpotBugs Report Missing"),
+            Map.entry("spotbugs:report-unreadable", "SpotBugs Report Unreadable"),
+            Map.entry("jacoco:LineCoverage", "Coverage Gap"), Map.entry("jacoco:goal-failed", "JaCoCo Goal Failed"),
+            Map.entry("jacoco:report-missing", "JaCoCo Report Missing"),
+            Map.entry("jacoco:report-unreadable", "JaCoCo Report Unreadable"),
+            Map.entry("cyclonedx:InvalidBom", "Invalid SBOM"),
+            Map.entry("cyclonedx:MissingComponents", "SBOM Missing Components"),
+            Map.entry("cyclonedx:goal-failed", "CycloneDX Goal Failed"),
+            Map.entry("cyclonedx:report-missing", "CycloneDX Report Missing"),
+            Map.entry("cyclonedx:report-unreadable", "CycloneDX Report Unreadable"),
+            Map.entry("pitest:SURVIVED", "Surviving Mutation"),
+            Map.entry("pitest:NO_COVERAGE", "Mutation Without Coverage"),
+            Map.entry("pitest:goal-failed", "PIT Goal Failed"),
+            Map.entry("pitest:report-missing", "PIT Report Missing"),
+            Map.entry("pitest:report-unreadable", "PIT Report Unreadable"),
+            Map.entry("spring-javaformat:Formatting", "Formatting Drift"),
+            Map.entry("spring-javaformat:goal-failed", "Spring Java Format Failed"),
+            Map.entry("spring-javaformat:report-missing", "Spring Java Format Output Missing"),
+            Map.entry("spring-javaformat:report-unreadable", "Spring Java Format Output Unreadable"),
+            Map.entry("errorprone:goal-failed", "Error Prone Compile Failed"),
+            Map.entry("errorprone:report-missing", "Error Prone Output Missing"),
+            Map.entry("errorprone:report-unreadable", "Error Prone Output Unreadable"),
+            Map.entry("owasp:CveCritical", "Critical CVE"), Map.entry("owasp:CveHigh", "High CVE"),
+            Map.entry("owasp:CveMedium", "Medium CVE"), Map.entry("owasp:CveLow", "Low CVE"),
+            Map.entry("owasp:SuppressedVulnerability", "Suppressed Vulnerability"),
+            Map.entry("owasp:goal-failed", "OWASP Dependency Check Failed"),
+            Map.entry("owasp:report-missing", "OWASP Dependency Check Report Missing"),
+            Map.entry("owasp:report-unreadable", "OWASP Dependency Check Report Unreadable"),
+            Map.entry("jspecify:DependencyMissing", "JSpecify Dependency Missing"),
+            Map.entry("jspecify:NotAdopted", "JSpecify Not Adopted"));
 
     private RuleTitles() {
         // utility class

@@ -19,5 +19,5 @@ if (retries > MAX_RETRIES) { ... }
 double fee = amount * PROCESSING_FEE_RATE;
 ```
 
-The name documents intent; the constant centralises change; the compiler ensures
+The name documents intent; the constant centralizes change; the compiler ensures
 consistency. Common exceptions: `-1`, `0`, `1`, `2` in well-understood idioms.

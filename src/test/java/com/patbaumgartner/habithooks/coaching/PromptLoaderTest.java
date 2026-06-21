@@ -10,6 +10,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class PromptLoaderTest {
 
+    private static final List<String> CHECKSTYLE_RULES = List.of("checkstyle:MethodLength",
+            "checkstyle:ParameterNumber", "checkstyle:CyclomaticComplexity", "checkstyle:VisibilityModifier",
+            "checkstyle:MagicNumber", "checkstyle:NestedIfDepth", "checkstyle:NestedTryDepth",
+            "checkstyle:BooleanExpressionComplexity");
+
+    private static final List<String> PMD_RULES = List.of("pmd:NcssCount", "pmd:GodClass", "pmd:UnusedPrivateField",
+            "pmd:UnusedLocalVariable", "pmd:EmptyCatchBlock", "pmd:LiteralsFirstInComparisons",
+            "pmd:ReturnEmptyCollectionRatherThanNull", "pmd:UseCollectionIsEmpty", "pmd:UseEqualsToCompareStrings",
+            "pmd:OverrideBothEqualsAndHashcode", "pmd:AvoidReassigningParameters", "pmd:LooseCoupling",
+            "pmd:ArrayIsStoredDirectly", "pmd:PreserveStackTrace");
+
+    private static final List<String> MAVEN_RULES = mavenRules();
+
     @Test
     void toFilenameReplacesColonWithDash() {
         assertThat(PromptLoader.toFilename("checkstyle:MethodLength")).isEqualTo("checkstyle-MethodLength.md");
@@ -51,14 +64,10 @@ class PromptLoaderTest {
     void allCoachingPromptFilesAreLoadable() {
         // Regression guard: if a prompt file is renamed or deleted this test fails.
         // To add a new coached rule: create the prompt file and add the rule ID here.
-        List<String> coachedRules = List.of("checkstyle:MethodLength", "checkstyle:ParameterNumber",
-                "checkstyle:CyclomaticComplexity", "checkstyle:VisibilityModifier", "checkstyle:MagicNumber",
-                "checkstyle:NestedIfDepth", "checkstyle:NestedTryDepth", "checkstyle:BooleanExpressionComplexity",
-                "pmd:NcssCount", "pmd:GodClass", "pmd:UnusedPrivateField", "pmd:UnusedLocalVariable",
-                "pmd:EmptyCatchBlock", "pmd:LiteralsFirstInComparisons", "pmd:ReturnEmptyCollectionRatherThanNull",
-                "pmd:UseCollectionIsEmpty", "pmd:UseEqualsToCompareStrings", "pmd:OverrideBothEqualsAndHashcode",
-                "pmd:AvoidReassigningParameters", "pmd:LooseCoupling", "pmd:ArrayIsStoredDirectly",
-                "pmd:PreserveStackTrace");
+        List<String> coachedRules = new ArrayList<>();
+        coachedRules.addAll(CHECKSTYLE_RULES);
+        coachedRules.addAll(PMD_RULES);
+        coachedRules.addAll(MAVEN_RULES);
         PromptLoader loader = new PromptLoader(Path.of("/nonexistent"));
         List<String> missing = new ArrayList<>();
         for (String ruleId : coachedRules) {
@@ -69,6 +78,28 @@ class PromptLoaderTest {
         assertThat(missing)
             .as("Coached rules whose prompt file could not be loaded — did you rename or delete a prompt file?")
             .isEmpty();
+    }
+
+    private static List<String> mavenRules() {
+        List<String> rules = new ArrayList<>();
+        rules.addAll(List.of("jacoco:LineCoverage", "cyclonedx:InvalidBom", "cyclonedx:MissingComponents"));
+        rules.addAll(List.of("pitest:SURVIVED", "pitest:NO_COVERAGE"));
+        rules.addAll(List.of("spring-javaformat:Formatting"));
+        rules.addAll(metaRules("spotbugs"));
+        rules.addAll(metaRules("jacoco"));
+        rules.addAll(metaRules("cyclonedx"));
+        rules.addAll(metaRules("pitest"));
+        rules.addAll(metaRules("spring-javaformat"));
+        rules.addAll(metaRules("errorprone"));
+        rules.addAll(List.of("owasp:CveCritical", "owasp:CveHigh", "owasp:CveMedium", "owasp:CveLow",
+                "owasp:SuppressedVulnerability"));
+        rules.addAll(metaRules("owasp"));
+        rules.addAll(List.of("jspecify:DependencyMissing", "jspecify:NotAdopted"));
+        return List.copyOf(rules);
+    }
+
+    private static List<String> metaRules(String toolPrefix) {
+        return List.of(toolPrefix + ":goal-failed", toolPrefix + ":report-missing", toolPrefix + ":report-unreadable");
     }
 
 }

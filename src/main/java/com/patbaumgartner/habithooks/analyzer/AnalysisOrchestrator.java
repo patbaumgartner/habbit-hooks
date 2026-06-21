@@ -49,6 +49,12 @@ public final class AnalysisOrchestrator {
                 .log("Analyzer '{}' config not found in {}; skipping. Run 'habit-hooks init' to scaffold missing files.");
             return List.of();
         }
+        if (files.isEmpty() && analyzer.requiresFiles()) {
+            LOGGER.atDebug()
+                .addArgument(() -> analyzerName)
+                .log("Skipping analyzer '{}' because no files matched scope.");
+            return List.of();
+        }
         LOGGER.atDebug()
             .addArgument(() -> analyzerName)
             .addArgument(() -> files.size())

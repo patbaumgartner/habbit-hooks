@@ -1,6 +1,6 @@
-High cyclomatic complexity means the method has too many independent execution paths.
-Each extra branch doubles the number of scenarios to test and the cognitive load to read.
-Complexity > 8 is a reliable predictor of defect density.
+High cyclomatic complexity means the method has many independent execution paths.
+Each extra branch adds another scenario to test and another path for a reader to trace.
+In this project, complexity above 8 is treated as a maintainability risk.
 
 **How to fix it:**
 

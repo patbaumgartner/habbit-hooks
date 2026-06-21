@@ -1,7 +1,7 @@
 # pmd UseCollectionIsEmpty
 
-Checking `size() == 0` to test emptiness is less readable and slightly less efficient than `isEmpty()`.
-`isEmpty()` communicates intent directly and is implemented in O(1) for all standard collections.
+Checking `size() == 0` to test emptiness is less direct than `isEmpty()` and can be less efficient for some collection implementations.
+`isEmpty()` communicates intent directly and avoids depending on how a collection computes its size.
 
 **How to fix it:**
 

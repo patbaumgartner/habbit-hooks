@@ -12,7 +12,8 @@ import picocli.CommandLine.ParentCommand;
  * <p>
  * Detects existing Checkstyle/PMD configurations, scaffolds missing ones, writes
  * {@code .habit-hooks.yaml}, an empty baseline, and optionally an
- * {@code ArchitectureTest.java} powered by Taikai.
+ * {@code ArchitectureTest.java} powered by Taikai or Maven snippets for optional
+ * project-scoped analyzers.
  */
 @Command(name = "init", mixinStandardHelpOptions = true,
         description = "Scaffold habit-hooks configuration for this project")
@@ -27,10 +28,14 @@ public final class InitCommand implements Runnable {
     @Option(names = { "--taikai" }, description = "Also scaffold a Taikai architecture test")
     private boolean taikai;
 
+    @Option(names = { "--maven-snippets" }, description = "Also scaffold optional Maven plugin snippets")
+    private boolean mavenSnippets;
+
     @Override
     public void run() {
         Path workingDir = parent.workingDir();
-        ProjectInitializer initializer = new ProjectInitializer(workingDir, dryRun, taikai, System.out);
+        ProjectInitializer.Options options = new ProjectInitializer.Options(dryRun, taikai, mavenSnippets);
+        ProjectInitializer initializer = new ProjectInitializer(workingDir, options, System.out);
         initializer.initialize();
     }
 

@@ -16,7 +16,8 @@ import org.slf4j.LoggerFactory;
  * <p>
  * Detects existing tool configurations, scaffolds missing ones, and writes
  * {@code .habit-hooks.yaml}. When {@code taikai} is set it also writes an
- * {@code ArchitectureTest.java} template.
+ * {@code ArchitectureTest.java} template. When {@code mavenSnippets} is set it writes
+ * optional Maven plugin and dependency snippets for project-scoped analyzers.
  */
 public final class ProjectInitializer {
 
@@ -26,39 +27,38 @@ public final class ProjectInitializer {
 
     private final Path workingDir;
 
-    private final boolean dryRun;
-
-    private final boolean taikai;
+    private final Options options;
 
     private final PrintStream out;
 
     /**
      * Creates an initializer for the given project.
      * @param workingDir the project root
-     * @param dryRun when {@code true}, prints intended writes without touching disk
-     * @param taikai when {@code true}, also scaffolds a Taikai architecture test
+     * @param options scaffold options
      * @param out the stream to print progress messages to
      */
-    public ProjectInitializer(Path workingDir, boolean dryRun, boolean taikai, PrintStream out) {
+    public ProjectInitializer(Path workingDir, Options options, PrintStream out) {
         this.workingDir = workingDir;
-        this.dryRun = dryRun;
-        this.taikai = taikai;
+        this.options = options;
         this.out = out;
     }
 
     /** Runs the initialization process. */
     public void initialize() {
-        if (dryRun) {
+        if (options.dryRun()) {
             out.println("[dry-run] The following files would be written:");
         }
         writeIfAbsent("checkstyle.xml", "checkstyle.xml");
         writeIfAbsent("pmd-ruleset.xml", "pmd-ruleset.xml");
         writeIfAbsent(".habit-hooks.yaml", "habit-hooks-config.yaml");
         writeIfAbsent(".habit-hooks-baseline.json", "baseline-empty.json");
-        if (taikai) {
+        if (options.taikai()) {
             scaffoldTaikaiTest();
         }
-        if (!dryRun) {
+        if (options.mavenSnippets()) {
+            writeIfAbsent("habit-hooks-maven-snippets.xml", "maven-quality-pom-snippets.xml");
+        }
+        if (!options.dryRun()) {
             out.println("✅ habit-hooks initialized. Run: java -jar habit-hooks.jar --all");
         }
     }
@@ -74,7 +74,7 @@ public final class ProjectInitializer {
             LOGGER.warn("Template not found: {}", templateResource);
             return;
         }
-        if (dryRun) {
+        if (options.dryRun()) {
             out.printf("  write %s%n", targetFile);
             return;
         }
@@ -113,6 +113,10 @@ public final class ProjectInitializer {
         catch (IOException e) {
             LOGGER.error("Failed to write {}: {}", target, e.getMessage(), e);
         }
+    }
+
+    /** Options controlling which optional scaffold files are written. */
+    public record Options(boolean dryRun, boolean taikai, boolean mavenSnippets) {
     }
 
 }

@@ -1,7 +1,7 @@
 # Architecture
 
-habit-hooks is a single-process Java CLI that transforms Checkstyle/PMD findings
-into concise, actionable coaching for AI coding agents.
+habit-hooks is a single-process Java CLI that transforms Java quality-tool
+findings into concise, actionable coaching for AI coding agents.
 
 ## Runtime flow
 
@@ -12,14 +12,21 @@ flowchart LR
     C --> D[AnalysisOrchestrator]
     D --> E[CheckstyleAnalyzer]
     D --> F[PmdAnalyzer]
+    D --> N[MavenGoalAnalyzer]
+    D --> O[TaikaiAnalyzer]
     E --> G[Violation list]
     F --> G
+    N --> G
+    O --> G
     G --> H[BaselineManager.filter]
     H --> I[CoachingEngine]
     I --> J[PromptLoader]
     I --> K[Coaching groups]
     K --> L[CoachingRenderer]
     L --> M[Console output + exit code]
+    H --> P[QualityReportBuilder]
+    P --> Q[Markdown/JSON/HTML/SARIF]
+    P --> R[Agent task export]
 ```
 
 ## CLI precedence and defaults
@@ -52,6 +59,8 @@ Configuration loading behavior:
 - `com.patbaumgartner.habithooks.baseline`: baseline persistence and suppression checks.
 - `com.patbaumgartner.habithooks.coaching`: prompt lookup, grouping, and rendering.
 - `com.patbaumgartner.habithooks.init`: scaffolding for first-time project setup.
+- `com.patbaumgartner.habithooks.report`: local quality reports, SARIF, and trend snapshots.
+- `com.patbaumgartner.habithooks.tasks`: rule-grouped task batches for AI agents.
 
 ## Design constraints
 
@@ -59,6 +68,9 @@ Configuration loading behavior:
 - Sealed analyzer abstraction to keep orchestrator behavior exhaustive and explicit.
 - Baseline suppression is commit-hash aware and invalidates on dirty files.
 - Tooling-first design: Checkstyle and PMD remain source-of-truth for rule semantics.
+- Project-scoped analyzers can run without a changed-file list so whole-build signals
+    such as coverage, mutation testing, formatter validation, SBOM checks, compiler
+    checks, and architecture tests still reach the agent.
 - Safe-default config model: omitted/null/blank values resolve to behaviorally stable defaults.
 
 ## Build and quality gates
@@ -67,5 +79,7 @@ Configuration loading behavior:
 - Integration tests through Maven Failsafe (`*IT.java`) for end-to-end command flows.
 - JaCoCo minimum line coverage gate at 70%.
 - Checkstyle, PMD/CPD, SpotBugs, spring-javaformat formatting check, and optional PIT mutation profile.
+- Optional habit-hooks analyzers can normalize SpotBugs, JaCoCo, CycloneDX, PIT,
+    OWASP Dependency Check, Spring Java Format, Error Prone, and JSpecify feedback.
 - Supply-chain controls include SBOM generation, CodeQL, OWASP dependency checks,
   OpenSSF Scorecard, keyless signatures, and SLSA provenance in release pipelines.

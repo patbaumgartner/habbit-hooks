@@ -64,8 +64,8 @@ public final class ConfigLoader {
             LOGGER.debug("Loaded config from {}", path);
             return Optional.of(config);
         }
-        catch (IOException e) {
-            LOGGER.error("Failed to parse config file {}: {}. Using defaults.", path, e.getMessage(), e);
+        catch (IOException ex) {
+            LOGGER.warn("Failed to parse config file {}: {}. Using defaults.", path, ex.getMessage());
             return Optional.empty();
         }
     }

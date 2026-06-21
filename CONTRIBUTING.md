@@ -56,8 +56,9 @@ Additionally:
    `src/main/resources/com/patbaumgartner/habithooks/prompts/<tool>-<RuleName>.md`
    (replace `:` with `-`, keep the original rule name casing)
 3. Register the title in `RuleTitles.TITLES`
-4. Add a test in `CoachingEngineTest`
-5. Document it in the README table
+4. Add the rule ID to `PromptLoaderTest.allCoachingPromptFilesAreLoadable`
+5. Add or update behavior tests when the rule requires parser or coaching changes
+6. Document it in the README coached-rules table
 
 ## Running the tests
 

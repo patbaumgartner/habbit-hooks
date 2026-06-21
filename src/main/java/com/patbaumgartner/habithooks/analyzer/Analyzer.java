@@ -11,13 +11,28 @@ import java.util.List;
  * Each implementation wraps one tool (Checkstyle, PMD/CPD, SpotBugs, …) and returns the
  * violations it finds as a normalized list of {@link Violation} records.
  */
-public sealed interface Analyzer permits CheckstyleAnalyzer, PmdAnalyzer, TaikaiAnalyzer {
+public sealed interface Analyzer
+        permits CheckstyleAnalyzer, JSpecifyAnalyzer, MavenGoalAnalyzer, PmdAnalyzer, TaikaiAnalyzer {
 
     /**
      * Returns the tool prefix used in rule IDs (e.g. {@code "checkstyle"}).
      * @return the tool prefix, never {@code null}
      */
     String toolPrefix();
+
+    /**
+     * Returns whether this analyzer needs a non-empty Java file scope to produce useful
+     * results.
+     *
+     * <p>
+     * File-oriented analyzers such as Checkstyle and PMD use the changed-file scope.
+     * Project-oriented analyzers such as coverage, mutation testing, and SBOM checks run
+     * against the whole build and should still execute when no Java files changed.
+     * @return {@code true} when an empty file list should skip this analyzer
+     */
+    default boolean requiresFiles() {
+        return true;
+    }
 
     /**
      * Runs the tool against the provided set of Java source files.
