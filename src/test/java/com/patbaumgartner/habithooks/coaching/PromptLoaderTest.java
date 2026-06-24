@@ -100,6 +100,8 @@ class PromptLoaderTest {
         rules.addAll(metaRules("pitest"));
         rules.addAll(metaRules("spring-javaformat"));
         rules.addAll(metaRules("errorprone"));
+        rules.addAll(List.of("openrewrite:SuggestedRefactor"));
+        rules.addAll(metaRules("openrewrite"));
         rules.addAll(metaRules("cpd"));
         rules.addAll(List.of("owasp:CveCritical", "owasp:CveHigh", "owasp:CveMedium", "owasp:CveLow",
                 "owasp:SuppressedVulnerability"));

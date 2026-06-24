@@ -17,7 +17,8 @@ final class MavenExecutionClassifier {
                     List.of("--- spring-javaformat:", "spring-javaformat-maven-plugin",
                             "No plugin found for prefix 'spring-javaformat'")),
             Map.entry("errorprone", List.of("--- compiler:", "maven-compiler-plugin", "COMPILATION ERROR")),
-            Map.entry("owasp", List.of("--- dependency-check:", "dependency-check-maven")));
+            Map.entry("owasp", List.of("--- dependency-check:", "dependency-check-maven")), Map.entry("openrewrite",
+                    List.of("--- rewrite:", "rewrite-maven-plugin", "No plugin found for prefix 'rewrite'")));
 
     private MavenExecutionClassifier() {
     }

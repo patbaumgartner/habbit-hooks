@@ -21,7 +21,7 @@ context window and degrades performance.
 
 **habit-hooks** wraps your existing Java quality tools — starting with
 **Checkstyle** and **PMD**, and extending to project-level Maven signals such as
-SpotBugs, JaCoCo, CycloneDX, PIT, Spring Java Format, Error Prone, JSpecify, and
+SpotBugs, JaCoCo, CycloneDX, PIT, Spring Java Format, Error Prone, OpenRewrite, JSpecify, and
 Taikai — to create the trigger. Instead of providing only a metric, it gives actionable coaching on
 *why* the finding matters and *how* to fix it. This creates AI behaviour that
 looks like human habits with similar effects.
@@ -266,6 +266,11 @@ and *how to fix it*.
 | errorprone        | `errorprone:lifecycle-blocked`               | Error Prone lifecycle blocked    |
 | errorprone        | `errorprone:report-missing`                  | Error Prone output missing       |
 | errorprone        | `errorprone:report-unreadable`               | Error Prone output unreadable    |
+| openrewrite       | `openrewrite:SuggestedRefactor`              | Suggested automated refactor     |
+| openrewrite       | `openrewrite:goal-failed`                    | OpenRewrite goal failed          |
+| openrewrite       | `openrewrite:lifecycle-blocked`              | OpenRewrite lifecycle blocked    |
+| openrewrite       | `openrewrite:report-missing`                 | OpenRewrite patch missing        |
+| openrewrite       | `openrewrite:report-unreadable`              | OpenRewrite patch unreadable     |
 | owasp             | `owasp:CveCritical`                          | Critical CVE                     |
 | owasp             | `owasp:CveHigh`                              | High CVE                         |
 | owasp             | `owasp:CveMedium`                            | Medium CVE                       |
@@ -371,6 +376,10 @@ analyzers:
     enabled: true
     rulesets:
       - pmd-ruleset.xml
+  cpd:                        # opt-in: parses target/cpd.xml
+    enabled: false
+    goal: pmd:cpd
+    reportFile: target/cpd.xml
   taikai:                      # opt-in: runs ArchitectureTest via Maven
     enabled: false
     testClass: ArchitectureTest
@@ -402,6 +411,10 @@ analyzers:
     enabled: false
     goal: -Phabit-hooks-analyzers org.owasp:dependency-check-maven:check -Dformat=JSON -DfailBuildOnCVSS=11
     reportFile: target/dependency-check-report.json
+  openrewrite:                 # opt-in: parses target/rewrite/rewrite.patch
+    enabled: false
+    goal: -Phabit-hooks-openrewrite rewrite:dryRunNoFork
+    reportFile: target/rewrite/rewrite.patch
   jspecify:                    # opt-in: checks nullness annotation adoption
     enabled: false
 ```
@@ -426,7 +439,7 @@ Enable the matching Maven plugin or dependency before turning on a Maven-backed
 analyzer. `habit-hooks init --maven-snippets` writes
 `habit-hooks-maven-snippets.xml`, a reference file with copyable fragments for
 JaCoCo, SpotBugs, CycloneDX, OWASP Dependency Check, PIT, Spring Java Format,
-Error Prone, JSpecify, and Taikai. It does not edit `pom.xml` automatically.
+Error Prone, OpenRewrite, JSpecify, and Taikai. It does not edit `pom.xml` automatically.
 The snippets keep expensive checks opt-in, but the generated PIT profile includes
 minimum mutation, coverage, and test-strength thresholds, and the Error Prone
 compiler fragment enables `-Xlint:all` with `-Werror` for stricter Spring Boot
@@ -434,7 +447,7 @@ service builds.
 
 `habit-hooks init --spring-boot` uses the same snippets but enables the full
 Spring Boot reference surface immediately: Taikai, SpotBugs, JaCoCo, CycloneDX,
-PIT, Spring Java Format, Error Prone, OWASP Dependency Check, and JSpecify. Use
+PIT, Spring Java Format, Error Prone, OpenRewrite, OWASP Dependency Check, and JSpecify. Use
 `habit-hooks doctor` after copying Maven snippets to verify the local setup
 before relying on the gate.
 
@@ -746,6 +759,7 @@ Current implementation:
 
 - Checkstyle and PMD analyzer wrapping with coaching
 - Maven-backed project analyzers for SpotBugs, JaCoCo, CycloneDX, OWASP Dependency Check, PIT, Spring Java Format, and Error Prone
+- Maven-backed OpenRewrite dry-run analyzer for automated refactoring opportunities
 - JSpecify adoption analyzer for nullness annotation setup
 - Built-in coaching prompts for Maven-backed analyzer meta-rules and JSpecify adoption findings
 - Local reports, SARIF, trend deltas, doctor, dependency-update reports, and prioritized agent-task exports

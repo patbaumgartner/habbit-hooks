@@ -187,6 +187,31 @@ class ReportParsersTest {
         assertThat(violations.get(0).message()).contains("CVE-2026-0001", "CVSS 8.1");
     }
 
+    @Test
+    void parsesOpenRewritePatchIntoPerFileFindings() throws Exception {
+        Path report = write("target/rewrite/rewrite.patch", """
+                diff --git a/src/main/java/com/example/A.java b/src/main/java/com/example/A.java
+                index 1111111..2222222 100644
+                --- a/src/main/java/com/example/A.java
+                +++ b/src/main/java/com/example/A.java
+                @@ -10,4 +12,5 @@ class A {
+                 }
+                diff --git a/src/main/java/com/example/B.java b/src/main/java/com/example/B.java
+                index 1111111..2222222 100644
+                --- a/src/main/java/com/example/B.java
+                +++ b/src/main/java/com/example/B.java
+                @@ -1,3 +1,3 @@
+                 class B {}
+                """);
+
+        List<Violation> violations = ReportParsers.openRewritePatch().parse(report, tempDir, "openrewrite");
+
+        assertThat(violations).extracting(Violation::ruleId)
+            .containsExactly("openrewrite:SuggestedRefactor", "openrewrite:SuggestedRefactor");
+        assertThat(violations).extracting(Violation::location)
+            .containsExactly("src/main/java/com/example/A.java:12", "src/main/java/com/example/B.java:1");
+    }
+
     private Path write(String relativePath, String content) throws Exception {
         Path report = tempDir.resolve(relativePath);
         Files.createDirectories(report.getParent());

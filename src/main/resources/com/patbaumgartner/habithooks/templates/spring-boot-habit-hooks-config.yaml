@@ -73,5 +73,11 @@ analyzers:
     # repeatable reference runs after the local cache is warm.
     goal: -Phabit-hooks-analyzers org.owasp:dependency-check-maven:check -Dformat=JSON -DfailBuildOnCVSS=11
     reportFile: target/dependency-check-report.json
+  openrewrite:
+    enabled: true
+    # Dry-run codemod pass. Review target/rewrite/rewrite.patch and apply safe
+    # changes during modernization work.
+    goal: -Phabit-hooks-openrewrite rewrite:dryRunNoFork
+    reportFile: target/rewrite/rewrite.patch
   jspecify:
     enabled: true

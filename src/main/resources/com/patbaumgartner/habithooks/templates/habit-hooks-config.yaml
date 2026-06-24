@@ -71,5 +71,9 @@ analyzers:
     enabled: false
     goal: -Phabit-hooks-analyzers org.owasp:dependency-check-maven:check -Dformat=JSON -DfailBuildOnCVSS=11
     reportFile: target/dependency-check-report.json
+  openrewrite:
+    enabled: false
+    goal: -Phabit-hooks-openrewrite rewrite:dryRunNoFork
+    reportFile: target/rewrite/rewrite.patch
   jspecify:
     enabled: false

@@ -53,4 +53,9 @@ public final class ReportParsers {
         return (reportPath, workingDir, toolPrefix) -> OwaspDependencyCheckReportParser.parse(reportPath, toolPrefix);
     }
 
+    /** Creates a parser for OpenRewrite dry-run patch output. */
+    public static MavenGoalAnalyzer.ReportParser openRewritePatch() {
+        return (reportPath, workingDir, toolPrefix) -> OpenRewritePatchParser.parse(reportPath, toolPrefix);
+    }
+
 }

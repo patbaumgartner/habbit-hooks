@@ -10,7 +10,8 @@ public record ReportFinding(String ruleId, String tool, String dimension, String
 
     private static final Map<String, String> DIMENSIONS_BY_TOOL = Map.of("owasp", "supply-chain", "cyclonedx",
             "supply-chain", "jacoco", "test-signal", "pitest", "test-signal", "taikai", "architecture",
-            "spring-javaformat", "formatting", "spotbugs", "correctness", "errorprone", "correctness");
+            "spring-javaformat", "formatting", "spotbugs", "correctness", "errorprone", "correctness", "openrewrite",
+            "maintainability");
 
     private static final int CRITICAL_RANK = 0;
 
